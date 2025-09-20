@@ -7,3 +7,6 @@ psycopg2-binary # if using Postgres
 drf-spectacular
 drf-nested-routers
 django-cors-headers
+
+# Production WSGI server
+gunicorn

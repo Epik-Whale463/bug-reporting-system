@@ -64,7 +64,7 @@ export default function Register(){
         </form>
         {error && <div style={{color:'var(--danger)', marginTop:12}}>{JSON.stringify(error)}</div>}
         <div style={{marginTop:16,textAlign:'center'}} className="muted">
-          Already have an account? <Link href="/" style={{color:'var(--accent)'}}>Sign in →</Link>
+          Already have an account? <Link href="/" style={{color:'var(--text)'}}>Sign in →</Link>
         </div>
       </div>
       </div>

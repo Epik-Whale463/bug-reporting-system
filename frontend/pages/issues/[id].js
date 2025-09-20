@@ -11,6 +11,7 @@ export default function IssueDetail() {
   const [issue, setIssue] = useState(null)
   const [comments, setComments] = useState([])
   const [users, setUsers] = useState([])
+  const [currentUser, setCurrentUser] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
   
@@ -29,6 +30,7 @@ export default function IssueDetail() {
     }
     
     loadData()
+    loadCurrentUser()
   }, [id])
   
   const loadData = async () => {
@@ -66,6 +68,15 @@ export default function IssueDetail() {
       setLoading(false)
     }
   }
+
+  const loadCurrentUser = async () => {
+    try {
+      const userRes = await api.get('/auth/user/')
+      setCurrentUser(userRes.data)
+    } catch (err) {
+      console.warn('Failed to load current user:', err)
+    }
+  }
   
   const addComment = async (e) => {
     e.preventDefault()
@@ -95,6 +106,11 @@ export default function IssueDetail() {
       alert('Failed to update issue: ' + (err.response?.data?.detail || err.message))
     }
   }
+
+  // Helper function to check if current user is project owner
+  const isProjectOwner = () => {
+    return currentUser && issue && issue.project && issue.project.owner && currentUser.id === issue.project.owner.id
+  }
   
   if (loading) return <div>Loading...</div>
   if (error) return <div style={{color: 'red'}}>Error: {error}</div>
@@ -115,14 +131,14 @@ export default function IssueDetail() {
   }
   
   return (
-    <div style={{maxWidth: 800, margin: '24px auto', padding: '20px'}}>
+    <div className="container wide">
       {/* Navigation */}
-      <div style={{marginBottom: '20px'}}>
-        <Link href="/dashboard" style={{color: '#007bff', textDecoration: 'none'}}>Back to Dashboard</Link>
+      <div style={{marginBottom: '32px'}}>
+        <Link href="/dashboard" className="gh-btn">Back to Dashboard</Link>
         {issue.project && (
           <>
             {' | '}
-            <Link href={`/projects/${issue.project.id}/issues`} style={{color: '#007bff', textDecoration: 'none'}}>
+            <Link href={`/projects/${issue.project.id}/issues`} style={{color: 'var(--text)', textDecoration: 'none'}}>
               {issue.project.name} Issues
             </Link>
           </>
@@ -130,7 +146,7 @@ export default function IssueDetail() {
       </div>
       
       {/* Issue Header */}
-      <div style={{marginBottom: '30px'}}>
+  <div style={{marginBottom: '36px'}}>
         <h1 style={{marginBottom: '10px'}}>{issue.title}</h1>
         <div style={{display: 'flex', gap: '10px', alignItems: 'center', marginBottom: '15px'}}>
           <span style={{
@@ -151,30 +167,43 @@ export default function IssueDetail() {
           }}>
             {issue.priority.toUpperCase()}
           </span>
-          <span style={{fontSize: '14px', color: '#7d8590'}}>
+          <span style={{fontSize: '14px', color: 'var(--muted)'}}>
             Reporter: {issue.reporter?.username}
           </span>
           {issue.assignee && (
-            <span style={{fontSize: '14px', color: '#7d8590'}}>
+            <span style={{fontSize: '14px', color: 'var(--muted)'}}>
               Assignee: {issue.assignee.username}
             </span>
           )}
         </div>
-        
+        {/* Issue Description (moved above quick actions) */}
+        <div style={{marginBottom: '18px'}}>
+          <div style={{
+            padding: '20px', 
+            borderRadius: '12px', 
+            background: 'var(--panel)',
+            border: '1px solid var(--border)',
+            minHeight: '60px',
+            color: 'var(--text)',
+            lineHeight: 1.6
+          }}>
+            {issue.description ? (
+              <div style={{whiteSpace: 'pre-wrap'}}>{issue.description}</div>
+            ) : (
+              <em style={{color: 'var(--muted)'}}>No description provided</em>
+            )}
+          </div>
+        </div>
+
         {/* Quick Actions */}
-        <div style={{display: 'flex', gap: '15px', marginBottom: '15px'}}>
+        <div style={{display: 'flex', gap: '20px', marginBottom: '18px'}}>
           <div>
-            <label style={{display: 'block', fontSize: '12px', marginBottom: '5px'}}>Status</label>
+            <label style={{display: 'block', fontSize: '12px', marginBottom: '5px', color: 'var(--muted)'}}>Status</label>
             <select 
               value={issue.status}
               onChange={e => updateIssue({status: e.target.value})}
-              style={{
-                padding: '8px', 
-                border: '1px solid #30363d', 
-                borderRadius: '6px',
-                backgroundColor: '#0d1117',
-                color: '#f0f6fc'
-              }}
+              className="form-control"
+              style={{fontSize: '14px', padding: '8px 12px', minWidth: '120px'}}
             >
               {statusOptions.map(status => (
                 <option key={status} value={status}>{status.replace('_', ' ').toUpperCase()}</option>
@@ -182,17 +211,12 @@ export default function IssueDetail() {
             </select>
           </div>
           <div>
-            <label style={{display: 'block', fontSize: '12px', marginBottom: '5px'}}>Priority</label>
+            <label style={{display: 'block', fontSize: '12px', marginBottom: '5px', color: 'var(--muted)'}}>Priority</label>
             <select 
               value={issue.priority}
               onChange={e => updateIssue({priority: e.target.value})}
-              style={{
-                padding: '8px', 
-                border: '1px solid #30363d', 
-                borderRadius: '6px',
-                backgroundColor: '#0d1117',
-                color: '#f0f6fc'
-              }}
+              className="form-control"
+              style={{fontSize: '14px', padding: '8px 12px', minWidth: '120px'}}
             >
               {priorityOptions.map(priority => (
                 <option key={priority} value={priority}>{priority.toUpperCase()}</option>
@@ -200,73 +224,53 @@ export default function IssueDetail() {
             </select>
           </div>
           <div>
-            <label style={{display: 'block', fontSize: '12px', marginBottom: '5px'}}>Assignee</label>
-            <select 
-              value={issue.assignee?.id || ''}
-              onChange={e => updateIssue({assignee_id: e.target.value || null})}
-              style={{
-                padding: '8px', 
-                border: '1px solid #30363d', 
-                borderRadius: '6px',
-                backgroundColor: '#0d1117',
-                color: '#f0f6fc'
-              }}
-            >
-              <option value="">Unassigned</option>
-              {Array.isArray(users) && users.map(user => (
-                <option key={user.id} value={user.id}>{user.username}</option>
-              ))}
-            </select>
+            <label style={{display: 'block', fontSize: '12px', marginBottom: '5px', color: 'var(--muted)'}}>Assignee</label>
+            {isProjectOwner() ? (
+              <select 
+                value={issue.assignee?.id || ''}
+                onChange={e => updateIssue({assignee_id: e.target.value || null})}
+                className="form-control"
+                style={{fontSize: '14px', padding: '8px 12px', minWidth: '140px'}}
+              >
+                <option value="">Unassigned</option>
+                {Array.isArray(users) && users.map(user => (
+                  <option key={user.id} value={user.id}>{user.username}</option>
+                ))}
+              </select>
+            ) : (
+              <input 
+                className="form-control" 
+                value={issue.assignee ? issue.assignee.username : 'Unassigned'} 
+                disabled 
+                style={{fontSize: '14px', padding: '8px 12px', minWidth: '140px', color: 'var(--muted)', backgroundColor: 'var(--input-bg)', cursor: 'not-allowed'}}
+                title="Only project owner can assign issues"
+              />
+            )}
           </div>
         </div>
       </div>
       
-      {/* Issue Description */}
-      <div style={{marginBottom: '30px'}}>
-        <h3>Description</h3>
-        <div style={{
-          border: '1px solid #30363d', 
-          padding: '15px', 
-          borderRadius: '6px', 
-          backgroundColor: '#0d1117',
-          minHeight: '60px',
-          color: '#f0f6fc'
-        }}>
-          {issue.description ? (
-            <div style={{whiteSpace: 'pre-wrap'}}>{issue.description}</div>
-          ) : (
-            <em style={{color: '#7d8590'}}>No description provided</em>
-          )}
-        </div>
-      </div>
+      {/* (Description moved above quick actions inside header) */}
       
       {/* Comments Section */}
       <div>
         <h3>Comments ({comments.length})</h3>
         
         {/* Add Comment Form */}
-        <div style={{
-          marginBottom: '20px', 
-          border: '1px solid #30363d', 
-          borderRadius: '6px', 
-          padding: '15px',
-          backgroundColor: '#0d1117'
-        }}>
+        <div className="card" style={{marginBottom: '24px'}}>
           <form onSubmit={addComment}>
             <textarea 
               value={newComment}
               onChange={e => setNewComment(e.target.value)}
               placeholder="Add a comment..."
+              className="form-control"
               style={{
-                width: '100%', 
-                padding: '10px', 
-                border: '1px solid #30363d', 
-                borderRadius: '6px', 
                 minHeight: '80px',
-                marginBottom: '10px',
-                backgroundColor: '#0d1117',
-                color: '#f0f6fc',
-                resize: 'vertical'
+                marginBottom: '12px',
+                resize: 'vertical',
+                fontFamily: 'var(--font-main)',
+                fontSize: '14px',
+                lineHeight: '1.4'
               }}
             />
             <button 
@@ -284,7 +288,16 @@ export default function IssueDetail() {
         
         {/* Comments List */}
         {comments.length === 0 ? (
-          <div style={{color: '#7d8590', fontStyle: 'italic'}}>No comments yet. Be the first to comment!</div>
+          <div style={{
+            color: 'var(--muted)', 
+            fontStyle: 'italic', 
+            textAlign: 'center', 
+            padding: '20px',
+            fontFamily: 'var(--font-main)',
+            fontSize: '14px'
+          }}>
+            No comments yet. Be the first to comment!
+          </div>
         ) : (
           <div>
             {comments.map(comment => (
@@ -301,14 +314,10 @@ export default function IssueDetail() {
       </div>
       
       {/* Metadata */}
-      <div style={{
-        marginTop: '30px', 
-        padding: '15px', 
-        backgroundColor: '#161b22', 
-        borderRadius: '6px',
-        border: '1px solid #30363d',
+      <div className="card" style={{
+        marginTop: '36px', 
         fontSize: '12px',
-        color: '#7d8590'
+        color: 'var(--muted)'
       }}>
         <div>Created: {new Date(issue.created_at).toLocaleString()}</div>
         {issue.updated_at !== issue.created_at && (

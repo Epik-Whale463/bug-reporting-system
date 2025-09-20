@@ -344,6 +344,7 @@ static/
 # Configuration files with secrets
 local_settings.py
 production_settings.py
+backend/api/migrations/0003_project_owner.py
 .env.production
 .env.staging
 

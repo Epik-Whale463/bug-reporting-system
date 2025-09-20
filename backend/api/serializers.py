@@ -10,9 +10,14 @@ class UserSerializer(serializers.ModelSerializer):
         fields = ('id','username','email')
 
 class ProjectSerializer(serializers.ModelSerializer):
+    owner = UserSerializer(read_only=True)
+    issue_count = serializers.IntegerField(read_only=True)
+    open_issues = serializers.IntegerField(read_only=True)
+    in_progress_issues = serializers.IntegerField(read_only=True)
+    closed_issues = serializers.IntegerField(read_only=True)
     class Meta:
         model = Project
-        fields = ('id','name','description','created_at')
+        fields = ('id','name','description','created_at','owner','issue_count','open_issues','in_progress_issues','closed_issues')
 
 class IssueSerializer(serializers.ModelSerializer):
     reporter = UserSerializer(read_only=True)
@@ -21,7 +26,7 @@ class IssueSerializer(serializers.ModelSerializer):
     # When creating issues via the nested project route (POST /projects/<id>/issues/)
     # the view will inject the project on save. Mark project as read-only so
     # serializer validation does not require the project field in the incoming payload.
-    project = serializers.PrimaryKeyRelatedField(read_only=True)
+    project = ProjectSerializer(read_only=True)
 
     class Meta:
         model = Issue
@@ -32,6 +37,7 @@ class IssueSerializer(serializers.ModelSerializer):
         # Handle assignee_id separately
         assignee_id = validated_data.pop('assignee_id', None)
         if assignee_id is not None:
+            # Allow clearing assignee by sending null/empty/0
             if assignee_id == 0 or assignee_id == '':
                 instance.assignee = None
             else:
@@ -39,7 +45,7 @@ class IssueSerializer(serializers.ModelSerializer):
                     assignee = User.objects.get(id=assignee_id)
                     instance.assignee = assignee
                 except User.DoesNotExist:
-                    pass
+                    raise serializers.ValidationError({'assignee_id': 'User with this id does not exist.'})
         
         # Update other fields
         for attr, value in validated_data.items():

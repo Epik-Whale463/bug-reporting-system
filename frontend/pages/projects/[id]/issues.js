@@ -10,6 +10,7 @@ export default function ProjectIssues() {
   const [project, setProject] = useState(null)
   const [issues, setIssues] = useState([])
   const [users, setUsers] = useState([])
+  const [currentUser, setCurrentUser] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
 
@@ -47,6 +48,7 @@ export default function ProjectIssues() {
     }
     loadProjectData()
     loadUsers()
+    loadCurrentUser()
   }, [id])
 
   // Load issues when page, filters, or search changes
@@ -74,6 +76,15 @@ export default function ProjectIssues() {
     } catch (err) {
       // If users endpoint fails, we'll extract from issues later
       console.warn('Failed to load users:', err)
+    }
+  }
+
+  const loadCurrentUser = async () => {
+    try {
+      const userRes = await api.get('/auth/user/')
+      setCurrentUser(userRes.data)
+    } catch (err) {
+      console.warn('Failed to load current user:', err)
     }
   }
 
@@ -174,6 +185,11 @@ export default function ProjectIssues() {
     }
   }
 
+  // Helper function to check if current user is project owner
+  const isProjectOwner = () => {
+    return currentUser && project && project.owner && currentUser.id === project.owner.id
+  }
+
   const handleFilterChange = (filterType, value) => {
     setCurrentPage(1) // Reset to first page when filters change
     if (filterType === 'status') {
@@ -263,9 +279,9 @@ export default function ProjectIssues() {
   const priorityColors = { low: '#6e7781', medium: '#0969da', high: '#bc4c00', critical: '#cf222e' }
 
   return (
-    <div className="container">
+    <div className="container wide">
       {/* Navigation Section */}
-      <div style={{ marginBottom: 24 }}>
+      <div style={{ marginBottom: 32 }}>
         <Link href="/dashboard" className="gh-btn">
           ← Back to Projects
         </Link>
@@ -281,7 +297,7 @@ export default function ProjectIssues() {
       </div>
 
       {/* Actions and Filters Section */}
-      <div style={{ marginBottom: 24 }}>
+  <div style={{ marginBottom: 28 }}>
         {/* Create Issue Button */}
         <div style={{ marginBottom: 16 }}>
           <button onClick={() => setShowCreateForm(!showCreateForm)} className="btn btn-primary">
@@ -290,7 +306,7 @@ export default function ProjectIssues() {
         </div>
 
         {/* Filters Row */}
-        <div className="issues-filters-container">
+  <div className="issues-filters-container" style={{ alignItems: 'center' }}>
           <input
             type="text"
             placeholder="Search issues..."
@@ -378,14 +394,23 @@ export default function ProjectIssues() {
                 </div>
                 <div className="col">
                   <label>Assignee</label>
-                  <select 
-                    className="form-control" 
-                    value={newIssue.assignee_id} 
-                    onChange={e => setNewIssue({...newIssue, assignee_id: e.target.value})}
-                  >
-                    <option value="">Unassigned</option>
-                    {users.map(u => <option key={u.id} value={u.id}>{u.username}</option>)}
-                  </select>
+                  {isProjectOwner() ? (
+                    <select 
+                      className="form-control" 
+                      value={newIssue.assignee_id} 
+                      onChange={e => setNewIssue({...newIssue, assignee_id: e.target.value})}
+                    >
+                      <option value="">Unassigned</option>
+                      {users.map(u => <option key={u.id} value={u.id}>{u.username}</option>)}
+                    </select>
+                  ) : (
+                    <input 
+                      className="form-control" 
+                      value="Unassigned (only project owner can assign)" 
+                      disabled 
+                      style={{color: 'var(--muted)', fontSize: '14px'}}
+                    />
+                  )}
                 </div>
               </div>
               <div className="modal-actions">
@@ -401,7 +426,7 @@ export default function ProjectIssues() {
         </div>
       )}
 
-      <div>
+  <div style={{ marginTop: 8 }}>
         <div className="issue-list-header">
           <h2 style={{margin:0}}>Issues</h2>
           <div className="muted" style={{ fontSize: 14 }}>
@@ -428,7 +453,7 @@ export default function ProjectIssues() {
             {issues.map(issue => (
               <div key={issue.id} className="issue-row">
                 <div>
-                  <h3><Link href={`/issues/${issue.id}`} style={{ color: '#007bff', textDecoration: 'none' }}>{issue.title}</Link></h3>
+                  <h3><Link href={`/issues/${issue.id}`} style={{ color: 'var(--text)', textDecoration: 'none' }}>{issue.title}</Link></h3>
                   <p className="issue-description muted">{issue.description || 'No description'}</p>
                   <div className="issue-meta">
                     <span style={{ padding: '4px 8px', borderRadius: 4, fontSize: 12, backgroundColor: statusColors[issue.status], color: 'white' }}>{issue.status.replace('_', ' ').toUpperCase()}</span>
@@ -442,10 +467,20 @@ export default function ProjectIssues() {
                   <select className="form-control" value={issue.status} onChange={e => updateIssueStatus(issue.id, e.target.value)} style={{fontSize:12}}>
                     {statusOptions.map(s => <option key={s} value={s}>{s.replace('_', ' ').toUpperCase()}</option>)}
                   </select>
-                  <select className="form-control" value={issue.assignee?.id || ''} onChange={e => updateIssueAssignee(issue.id, e.target.value)} style={{fontSize:12}}>
-                    <option value="">Unassigned</option>
-                    { (Array.isArray(users) ? users : (users?.results || [])).map(u => <option key={u.id} value={u.id}>{u.username}</option>) }
-                  </select>
+                  {isProjectOwner() ? (
+                    <select className="form-control" value={issue.assignee?.id || ''} onChange={e => updateIssueAssignee(issue.id, e.target.value)} style={{fontSize:12}}>
+                      <option value="">Unassigned</option>
+                      { (Array.isArray(users) ? users : (users?.results || [])).map(u => <option key={u.id} value={u.id}>{u.username}</option>) }
+                    </select>
+                  ) : (
+                    <input 
+                      className="form-control" 
+                      value={issue.assignee ? issue.assignee.username : 'Unassigned'} 
+                      disabled 
+                      style={{fontSize: 12, color: 'var(--muted)', backgroundColor: 'var(--input-bg)', cursor: 'not-allowed'}}
+                      title="Only project owner can assign issues"
+                    />
+                  )}
                 </div>
               </div>
             ))}

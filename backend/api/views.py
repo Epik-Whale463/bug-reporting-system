@@ -2,6 +2,7 @@ from rest_framework import viewsets, permissions, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from .models import Project, Issue, Comment
+from django.db.models import Count, Q
 from .serializers import ProjectSerializer, IssueSerializer, CommentSerializer, RegisterSerializer
 from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
@@ -15,31 +16,75 @@ class UserSerializer(serializers.ModelSerializer):
         model = User
         fields = ['id', 'username', 'email']
 
-class IsReporterOrAssignee(permissions.BasePermission):
+class IsOwnerOrReadOnly(permissions.BasePermission):
+    """
+    Custom permission to only allow owners of a project to edit it.
+    Anyone can read (view) projects.
+    """
     def has_object_permission(self, request, view, obj):
+        # Read permissions for EVERYONE (including anonymous users)
+        if request.method in permissions.SAFE_METHODS:
+            return True
+        # Write permissions only to the owner of the project
+        return obj.owner == request.user
+
+class IsReporterOrAssigneeOrReadOnly(permissions.BasePermission):
+    """
+    Custom permissions for issues:
+    - Everyone can view issues
+    - Reporter or assignee can update issue details (status, description, etc.)
+    - Only project owner can assign/reassign issues
+    """
+    def has_object_permission(self, request, view, obj):
+        # Read permissions for EVERYONE
+        if request.method in permissions.SAFE_METHODS:
+            return True
+        
         user = request.user
-        return obj.reporter == user or obj.assignee == user
+        if not user.is_authenticated:
+            return False
+        
+        # For updates, allow reporter or assignee to modify
+        # Assignment restrictions are handled in perform_update
+        return obj.reporter == user or obj.assignee == user or obj.project.owner == user
 
 class ProjectViewSet(viewsets.ModelViewSet):
-    queryset = Project.objects.all().order_by('-created_at')
     serializer_class = ProjectSerializer
-    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly, IsOwnerOrReadOnly]
     pagination_class = None  # Disable pagination for projects
 
+    def get_queryset(self):
+        # Return ALL projects for everyone to see (public dashboard)
+        return Project.objects.all().annotate(
+            issue_count=Count('issues'),
+            open_issues=Count('issues', filter=Q(issues__status='open')),
+            in_progress_issues=Count('issues', filter=Q(issues__status='in_progress')),
+            closed_issues=Count('issues', filter=Q(issues__status='closed')),
+        ).order_by('-created_at')
+
     def perform_create(self, serializer):
-        serializer.save()
+        # Automatically set the owner to the current user when creating
+        serializer.save(owner=self.request.user)
 
 class IssueViewSet(viewsets.ModelViewSet):
-    queryset = Issue.objects.select_related('project','reporter','assignee').all().order_by('-created_at')
     serializer_class = IssueSerializer
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
 
     def get_queryset(self):
+        # Return ALL issues for everyone to see (public dashboard)
+        queryset = Issue.objects.select_related('project','reporter','assignee').all().order_by('-created_at')
+        
         project_id = self.kwargs.get('project_pk')
-        queryset = self.queryset
         
         if project_id:
-            queryset = queryset.filter(project_id=project_id)
+            # Protect against non-integer project ids (e.g., 'undefined') coming from the frontend
+            try:
+                project_id_int = int(project_id)
+            except (TypeError, ValueError):
+                # Return empty queryset instead of raising 500
+                return queryset.none()
+
+            queryset = queryset.filter(project_id=project_id_int)
         
         # Search functionality
         search = self.request.query_params.get('search', None)
@@ -63,25 +108,39 @@ class IssueViewSet(viewsets.ModelViewSet):
         # Handle nested creation under projects (POST /projects/<id>/issues/)
         project_id = self.kwargs.get('project_pk')
         if project_id:
+            # Just ensure the project exists (no ownership check for creation)
             project = get_object_or_404(Project, pk=project_id)
             serializer.save(project=project, reporter=self.request.user)
         else:
             # Handle top-level creation if project is provided in data
             serializer.save(reporter=self.request.user)
 
+    def perform_update(self, serializer):
+        # Check if trying to assign/reassign the issue
+        if 'assignee' in self.request.data or 'assignee_id' in self.request.data:
+            # Only project owner can assign/reassign issues
+            issue = self.get_object()
+            if issue.project.owner != self.request.user:
+                from rest_framework.exceptions import PermissionDenied
+                raise PermissionDenied("Only the project owner can assign issues.")
+        
+        serializer.save()
+
     def get_permissions(self):
-        if self.action in ['partial_update','update']:
-            return [permissions.IsAuthenticated(), IsReporterOrAssignee()]
+        # Only reporter or assignee can update or delete an issue, but everyone can view
+        if self.action in ['partial_update', 'update', 'destroy']:
+            return [permissions.IsAuthenticated(), IsReporterOrAssigneeOrReadOnly()]
         return super().get_permissions()
 
 class CommentViewSet(viewsets.ModelViewSet):
-    queryset = Comment.objects.select_related('issue','author').prefetch_related('replies__author').all().order_by('created_at')
     serializer_class = CommentSerializer
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
 
     def get_queryset(self):
+        # Return ALL comments for everyone to see (public dashboard)
+        queryset = Comment.objects.select_related('issue','author').prefetch_related('replies__author').all().order_by('created_at')
+        
         issue_id = self.kwargs.get('issue_pk')
-        queryset = self.queryset
         if issue_id:
             queryset = queryset.filter(issue_id=issue_id)
         
@@ -91,6 +150,7 @@ class CommentViewSet(viewsets.ModelViewSet):
 
     def perform_create(self, serializer):
         issue_id = self.kwargs.get('issue_pk')
+        # Just ensure the issue exists (no ownership check)
         issue = get_object_or_404(Issue, pk=issue_id)
         
         # Check if this is a reply to another comment
@@ -121,3 +181,11 @@ class RegisterView(APIView):
             'access': str(refresh.access_token),
             'refresh': str(refresh)
         }, status=status.HTTP_201_CREATED)
+
+
+class CurrentUserView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request):
+        serializer = UserSerializer(request.user)
+        return Response(serializer.data)

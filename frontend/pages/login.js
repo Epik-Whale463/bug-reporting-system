@@ -55,7 +55,7 @@ export default function Login() {
         </form>
         {error && <div style={{color:'var(--danger)', marginTop:'15px', textAlign:'center'}}>{error}</div>}
         <div style={{marginTop:'18px', textAlign:'center'}} className="muted">
-          New to this app? <Link href="/register" style={{color:'var(--accent)'}}>Create an account</Link>
+          New to this app? <Link href="/register" style={{color:'var(--text)'}}>Create an account</Link>
         </div>
       </div>
       </div>

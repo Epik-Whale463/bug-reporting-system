@@ -4,12 +4,12 @@ import Link from 'next/link'
 
 export default function Dashboard(){
   const [projects, setProjects] = useState([])
-  const [projectStats, setProjectStats] = useState({})
   const [loading,setLoading] = useState(true)
   const [error,setError] = useState(null)
   const [showCreateForm, setShowCreateForm] = useState(false)
   const [newProject, setNewProject] = useState({name: '', description: ''})
   const [creating, setCreating] = useState(false)
+  const [user, setUser] = useState(null)
 
   const [editingProject, setEditingProject] = useState(null)
   const [editProject, setEditProject] = useState({name: '', description: ''})
@@ -27,7 +27,18 @@ export default function Dashboard(){
     }
 
     loadProjects()
+    loadUser()
   },[])
+
+  const loadUser = async () => {
+    try {
+      const res = await api.get('/auth/user/')
+      setUser(res.data)
+    } catch (err) {
+      console.error('Failed to load user:', err)
+      // Don't set error state as this is not critical
+    }
+  }
 
   const loadProjects = async () => {
     try {
@@ -36,24 +47,6 @@ export default function Dashboard(){
       const projectsData = res.data.results || res.data
       const validProjects = Array.isArray(projectsData) ? projectsData : []
       setProjects(validProjects)
-      
-      // Load stats for each project
-      const stats = {}
-      for (const project of validProjects) {
-        try {
-          const issuesRes = await api.get(`/projects/${project.id}/issues/`)
-          const issues = issuesRes.data.results || issuesRes.data || []
-          stats[project.id] = {
-            open: issues.filter(issue => issue.status === 'open').length,
-            in_progress: issues.filter(issue => issue.status === 'in_progress').length,
-            closed: issues.filter(issue => issue.status === 'closed').length,
-            total: issues.length
-          }
-        } catch (err) {
-          stats[project.id] = { open: 0, in_progress: 0, closed: 0, total: 0 }
-        }
-      }
-      setProjectStats(stats)
     } catch (err) {
       setError(err.response?.data || err.message)
     } finally {
@@ -117,24 +110,37 @@ export default function Dashboard(){
   return (
     <div className="dashboard-container">
       <div className="container">
-      <div style={{display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:'20px'}}>
-        <h1 style={{fontSize:'36px', fontWeight:'700', margin:'0', letterSpacing:'-0.02em'}}>Projects</h1>
-        <button onClick={handleLogout} className="btn btn-danger">
-          Logout
-        </button>
-      </div>
-      
-      <div style={{marginBottom:'20px'}}>
-        <button onClick={() => setShowCreateForm(!showCreateForm)} className="btn btn-primary">
-          {showCreateForm ? 'Cancel' : 'Create New Project'}
-        </button>
-      </div>
+        <div className="dashboard-layout">
+          {/* Welcome Sidebar */}
+          {user && (
+            <aside className="dashboard-sidebar">
+              <div className="welcome-message">
+                <h2>Hello there, {user.username}! 👋</h2>
+                <p>Welcome back to your project dashboard</p>
+              </div>
+            </aside>
+          )}
+          
+          {/* Main Content */}
+          <main className="dashboard-main">
+            <div className="dashboard-header">
+              <h1 style={{fontSize:'36px', fontWeight:'800', margin:'0', letterSpacing:'-0.02em'}}>Projects</h1>
+              <button onClick={handleLogout} className="btn btn-danger">
+                Logout
+              </button>
+            </div>
+            
+            <div className="dashboard-actions">
+              <button onClick={() => setShowCreateForm(!showCreateForm)} className="btn btn-primary">
+                {showCreateForm ? 'Cancel' : 'Create New Project'}
+              </button>
+            </div>
 
-      {/* Search Projects */}
-      {projects && projects.length > 0 && (
-        <div style={{marginBottom:'20px'}}>
-          <div className="search-input-container">
-            <input
+            {/* Search Projects */}
+            {projects && projects.length > 0 && (
+              <div style={{marginBottom:'20px'}}>
+                <div className="search-input-container">
+                  <input
               type="text"
               placeholder="Find a project..."
               value={searchQuery}
@@ -145,175 +151,177 @@ export default function Dashboard(){
                 maxWidth: '400px',
                 padding: '12px 16px',
                 fontSize: '14px',
-                background: '#0d1117',
-                border: '1px solid #30363d',
+                background: 'var(--background-secondary)',
+                border: '1px solid var(--border-color)',
                 borderRadius: '6px',
-                color: '#f0f6fc'
+                color: 'var(--text-primary)'
               }}
             />
           </div>
         </div>
       )}
 
-      {showCreateForm && (
-        <div className="modal-overlay" onClick={() => setShowCreateForm(false)}>
-          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-            <div className="modal-header">
-              <h3>Create New Project</h3>
-              <button onClick={() => setShowCreateForm(false)} className="modal-close">×</button>
-            </div>
-            <form onSubmit={handleCreateProject}>
-              <div style={{marginBottom:'15px'}}>
-                <label>Project Name *</label>
-                <input 
-                  className="form-control" 
-                  value={newProject.name} 
-                  onChange={e => setNewProject({...newProject, name: e.target.value})} 
-                  required 
-                  autoFocus
-                />
-              </div>
-              <div style={{marginBottom:'15px'}}>
-                <label>Description</label>
-                <textarea 
-                  className="form-control" 
-                  value={newProject.description} 
-                  onChange={e => setNewProject({...newProject, description: e.target.value})} 
-                  style={{minHeight:'80px'}} 
-                />
-              </div>
-              <div className="modal-actions">
-                <button type="button" onClick={() => setShowCreateForm(false)} className="btn btn-secondary">
-                  Cancel
-                </button>
-                <button type="submit" disabled={creating || !newProject.name} className="btn btn-success">
-                  {creating ? 'Creating...' : 'Create Project'}
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
-
-      {projects && projects.length === 0 ? (
-        <div className="card" style={{textAlign:'center', padding:'40px'}}>
-          <h3 style={{color:'#8b949e', marginBottom:'10px'}}>No Projects Yet</h3>
-          <p className="muted">Create your first project to get started!</p>
-        </div>
-      ) : (
-        (() => {
-          // Filter projects based on search query
-          const filteredProjects = projects.filter(project => {
-            if (!searchQuery) return true
-            const query = searchQuery.toLowerCase()
-            return (
-              project.name.toLowerCase().includes(query) ||
-              (project.description && project.description.toLowerCase().includes(query))
-            )
-          })
-
-          return filteredProjects.length === 0 && searchQuery ? (
-            <div className="card" style={{textAlign:'center', padding:'40px'}}>
-              <h3 style={{color:'#8b949e', marginBottom:'10px'}}>No projects found</h3>
-              <p className="muted">Try a different search term</p>
-              <button 
-                onClick={() => setSearchQuery('')} 
-                className="btn btn-primary" 
-                style={{marginTop:'10px'}}
-              >
-                Clear search
-              </button>
-            </div>
-          ) : (
-            <div className="project-list-container">
-              {filteredProjects.map(project => (
-                <div key={project.id} className="project-list-item">
-                  <div className="project-main-info">
-                    <div className="project-header">
-                      <Link 
-                        href={`/projects/${project.id}/issues`} 
-                        className="project-name"
-                      >
-                        {project.name}
-                      </Link>
-                      <button
-                        className="edit-button"
-                        onClick={(e) => {
-                          e.preventDefault()
-                          handleEditProject(project)
-                        }}
-                        title="Edit project"
-                      >
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                          <path d="m18 2 4 4-8 8-4 0 0-4 8-8z"/>
-                          <path d="M2 22l4-4"/>
-                        </svg>
+            {showCreateForm && (
+              <div className="modal-overlay" onClick={() => setShowCreateForm(false)}>
+                <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+                  <div className="modal-header">
+                    <h3>Create New Project</h3>
+                    <button onClick={() => setShowCreateForm(false)} className="modal-close">×</button>
+                  </div>
+                  <form onSubmit={handleCreateProject}>
+                    <div style={{marginBottom:'15px'}}>
+                      <label>Project Name *</label>
+                      <input 
+                        className="form-control" 
+                        value={newProject.name} 
+                        onChange={e => setNewProject({...newProject, name: e.target.value})} 
+                        required 
+                        autoFocus
+                      />
+                    </div>
+                    <div style={{marginBottom:'15px'}}>
+                      <label>Description</label>
+                      <textarea 
+                        className="form-control" 
+                        value={newProject.description} 
+                        onChange={e => setNewProject({...newProject, description: e.target.value})} 
+                        style={{minHeight:'80px'}} 
+                      />
+                    </div>
+                    <div className="modal-actions">
+                      <button type="button" onClick={() => setShowCreateForm(false)} className="btn btn-secondary">
+                        Cancel
+                      </button>
+                      <button type="submit" disabled={creating || !newProject.name} className="btn btn-success">
+                        {creating ? 'Creating...' : 'Create Project'}
                       </button>
                     </div>
-                    
-                    {project.description && (
-                      <p className="project-description">
-                        {project.description}
-                      </p>
-                    )}
-                    
-                    <div className="project-meta">
-                      <span>Updated {new Date(project.created_at).toLocaleDateString('en-US', { 
-                        month: 'short', 
-                        day: 'numeric'
-                      })}</span>
-                      {projectStats[project.id] && (
-                        <span>{projectStats[project.id].total} {projectStats[project.id].total === 1 ? 'issue' : 'issues'}</span>
-                      )}
-                    </div>
-                  </div>
+                  </form>
                 </div>
-              ))}
-            </div>
-          )
-        })()
-      )}
+              </div>
+            )}
 
-      {/* Edit Project Modal */}
-      {editingProject && (
-        <div className="modal-overlay" onClick={handleCancelEdit}>
-          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-            <div className="modal-header">
-              <h3>Edit Project</h3>
-              <button onClick={handleCancelEdit} className="modal-close">×</button>
-            </div>
-            <form onSubmit={handleUpdateProject}>
-              <div style={{marginBottom:'15px'}}>
-                <label>Project Name *</label>
-                <input 
-                  className="form-control" 
-                  value={editProject.name} 
-                  onChange={e => setEditProject({...editProject, name: e.target.value})} 
-                  required 
-                />
+            {projects && projects.length === 0 ? (
+              <div className="card" style={{textAlign:'center', padding:'40px'}}>
+                <h3 style={{color:'#8b949e', marginBottom:'10px'}}>No Projects Yet</h3>
+                <p className="muted">Create your first project to get started!</p>
               </div>
-              <div style={{marginBottom:'15px'}}>
-                <label>Description</label>
-                <textarea 
-                  className="form-control" 
-                  value={editProject.description} 
-                  onChange={e => setEditProject({...editProject, description: e.target.value})} 
-                  style={{minHeight:'80px'}} 
-                />
+            ) : (
+              (() => {
+                // Filter projects based on search query
+                const filteredProjects = projects.filter(project => {
+                  if (!searchQuery) return true
+                  const query = searchQuery.toLowerCase()
+                  return (
+                    project.name.toLowerCase().includes(query) ||
+                    (project.description && project.description.toLowerCase().includes(query))
+                  )
+                })
+
+                return filteredProjects.length === 0 && searchQuery ? (
+                  <div className="card" style={{textAlign:'center', padding:'40px'}}>
+                    <h3 style={{color:'#8b949e', marginBottom:'10px'}}>No projects found</h3>
+                    <p className="muted">Try a different search term</p>
+                    <button 
+                      onClick={() => setSearchQuery('')} 
+                      className="btn btn-primary" 
+                      style={{marginTop:'10px'}}
+                    >
+                      Clear search
+                    </button>
+                  </div>
+                ) : (
+                  <div className="project-list-container">
+                    {filteredProjects.map(project => (
+                      <div key={project.id} className="project-list-item">
+                        <div className="project-main-info">
+                          <div className="project-header">
+                            <Link 
+                              href={project?.id ? `/projects/${project.id}/issues` : '#'} 
+                              className="project-name"
+                            >
+                              {project.name}
+                            </Link>
+                            <button
+                              className="edit-button"
+                              onClick={(e) => {
+                                e.preventDefault()
+                                handleEditProject(project)
+                              }}
+                              title="Edit project"
+                            >
+                              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                <path d="m18 2 4 4-8 8-4 0 0-4 8-8z"/>
+                                <path d="M2 22l4-4"/>
+                              </svg>
+                            </button>
+                          </div>
+                          
+                          {project.description && (
+                            <p className="project-description">
+                              {project.description}
+                            </p>
+                          )}
+                          
+                          <div className="project-meta">
+                            <span>Updated {new Date(project.created_at).toLocaleDateString('en-US', { 
+                              month: 'short', 
+                              day: 'numeric'
+                            })}</span>
+                            {typeof project.issue_count !== 'undefined' ? (
+                              <span>{project.issue_count} {project.issue_count === 1 ? 'issue' : 'issues'}</span>
+                            ) : null}
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )
+              })()
+            )}
+
+            {/* Edit Project Modal */}
+            {editingProject && (
+              <div className="modal-overlay" onClick={handleCancelEdit}>
+                <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+                  <div className="modal-header">
+                    <h3>Edit Project</h3>
+                    <button onClick={handleCancelEdit} className="modal-close">×</button>
+                  </div>
+                  <form onSubmit={handleUpdateProject}>
+                    <div style={{marginBottom:'15px'}}>
+                      <label>Project Name *</label>
+                      <input 
+                        className="form-control" 
+                        value={editProject.name} 
+                        onChange={e => setEditProject({...editProject, name: e.target.value})} 
+                        required 
+                      />
+                    </div>
+                    <div style={{marginBottom:'15px'}}>
+                      <label>Description</label>
+                      <textarea 
+                        className="form-control" 
+                        value={editProject.description} 
+                        onChange={e => setEditProject({...editProject, description: e.target.value})} 
+                        style={{minHeight:'80px'}} 
+                      />
+                    </div>
+                    <div className="modal-actions">
+                      <button type="button" onClick={handleCancelEdit} className="btn btn-secondary">
+                        Cancel
+                      </button>
+                      <button type="submit" disabled={updating || !editProject.name} className="btn btn-primary">
+                        {updating ? 'Updating...' : 'Update Project'}
+                      </button>
+                    </div>
+                  </form>
+                </div>
               </div>
-              <div className="modal-actions">
-                <button type="button" onClick={handleCancelEdit} className="btn btn-secondary">
-                  Cancel
-                </button>
-                <button type="submit" disabled={updating || !editProject.name} className="btn btn-primary">
-                  {updating ? 'Updating...' : 'Update Project'}
-                </button>
-              </div>
-            </form>
-          </div>
+            )}
+
+          </main>
         </div>
-      )}
-
       </div>
     </div>
   )
