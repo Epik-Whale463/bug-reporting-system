@@ -1,7 +1,7 @@
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
 from rest_framework_nested import routers
-from .views import ProjectViewSet, IssueViewSet, CommentViewSet, UserViewSet
+from .views import ProjectViewSet, IssueViewSet, CommentViewSet, UserViewSet, health_check
 
 # Top-level router for projects and issues
 router = DefaultRouter()
@@ -19,6 +19,7 @@ issue_router = routers.NestedDefaultRouter(router, r'issues', lookup='issue')
 issue_router.register(r'comments', CommentViewSet, basename='issue-comments')
 
 urlpatterns = [
+    path('health/', health_check, name='health_check'),
     path('', include(router.urls)),
     path('', include(project_router.urls)),
     path('', include(issue_router.urls)),

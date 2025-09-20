@@ -1,5 +1,5 @@
 from rest_framework import viewsets, permissions, status
-from rest_framework.decorators import action
+from rest_framework.decorators import action, api_view
 from rest_framework.response import Response
 from .models import Project, Issue, Comment
 from django.db.models import Count, Q
@@ -10,6 +10,11 @@ from django.shortcuts import get_object_or_404
 from django.contrib.auth.models import User
 from rest_framework import serializers
 from django.db.models import Q
+
+@api_view(['GET'])
+def health_check(request):
+    """Simple health check endpoint"""
+    return Response({"status": "Backend is live", "message": "Bug Reporting System API is running!"})
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
