@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/router'
-import api from '@/lib/api'
+import api from 'lib/api'
 import Link from 'next/link'
-import CommentThread from '@/components/CommentThread'
+import CommentThread from 'components/CommentThread'
 
 export default function IssueDetail() {
   const router = useRouter()
