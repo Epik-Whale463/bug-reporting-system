@@ -1,0 +1,17 @@
+.pixel-blast-container {
+  width: 100%;
+  height: 100%;
+  position: relative;
+  overflow: hidden;
+}
+
+.pixel-blast-canvas { position: absolute; inset: 0 }
+.pixel-blast-container{width:100%;height:100%;position:absolute;left:0;top:0;pointer-events:none;z-index:0}
+.landing-foreground{position:relative;z-index:2;display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;padding:40px}
+.landing-hero{font-weight:900;color:var(--text);letter-spacing:-6px;text-align:center}
+.landing-cta{margin-top:28px}
+.landing-cta .gh-btn{padding:14px 22px;font-size:18px;border-radius:10px}
+
+@media (max-width:700px){
+  .landing-hero{font-size:42px;letter-spacing:-2px}
+}

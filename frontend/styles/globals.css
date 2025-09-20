@@ -1,0 +1,527 @@
+:root{
+	--bg:#0d1117; /* GitHub dark black background */
+	--panel:#0f1720; /* slightly lighter for panels */
+	--muted:#8b949e; /* secondary text */
+	--text:#c9d1d9; /* primary text */
+		--accent:#0366d6; /* GitHub-like blue accent */
+	--success:#2ea44f;
+	--danger:#ff7b72;
+	--border:rgba(240,246,252,0.06);
+	--code-bg:#161b22;
+}
+
+*{box-sizing:border-box}
+html,body,#__next{height:100%}
+body{
+    /* Use only Helvetica as requested */
+    font-family: Helvetica, Arial, sans-serif;
+    margin:0;padding:0;background:var(--bg);color:var(--text);
+    -webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;
+}/* Layout helpers */
+.container{max-width:1000px;margin:24px auto;padding:20px}
+.card{background:linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.008));border:1px solid rgba(240,246,252,0.02);padding:24px;border-radius:12px}
+
+/* Auth card stronger appearance when over animated backgrounds */
+.auth-card{
+	background: linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.04));
+	border: 1px solid rgba(255,255,255,0.08);
+	padding: 28px;
+	border-radius: 12px;
+	box-shadow: 0 18px 50px rgba(2,6,23,0.75);
+	backdrop-filter: blur(6px);
+}
+
+/* Typography */
+h1,h2,h3{color:var(--text);margin:0 0 8px 0}
+p{color:var(--muted);margin:0 0 12px 0}
+
+/* Links and buttons */
+a{color:var(--accent);text-decoration:none}
+a:hover{text-decoration:underline}
+button{cursor:pointer}
+
+/* Forms */
+input,textarea,select{
+  background: #0d1117;
+  border: 1px solid #30363d;
+  color: #f0f6fc;
+  padding: 8px;
+  border-radius: 6px;
+  width: 100%;
+}
+
+input:focus,textarea:focus,select:focus{
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(88,166,255,0.12);
+  border-color: #58a6ff;
+}
+
+select option {
+  background: #21262d;
+  color: #f0f6fc;
+  padding: 8px;
+}
+
+select:hover {
+  border-color: #8b949e;
+}
+
+label{display:block;margin-bottom:6px;color:var(--muted);font-size:13px}
+
+/* Buttons */
+.btn{display:inline-flex;align-items:center;justify-content:center;padding:8px 12px;border-radius:6px;border:none;color:var(--text);background:transparent;cursor:pointer}
+.btn:disabled{opacity:0.6;cursor:not-allowed}
+.btn-primary{background:var(--accent);color:white;font-weight:600}
+.auth-logo{display:block;width:56px;height:56px;margin:0 auto 12px auto}
+.auth-header{text-align:center;margin-bottom:12px}
+.auth-subtle{color:var(--muted);font-size:13px;text-align:center;margin-bottom:12px}
+.btn-danger{background:var(--danger);color:white}
+.btn-success{background:var(--success);color:white}
+.btn-secondary{background:#21262d;color:#f0f6fc;border:1px solid #30363d}
+.btn-secondary:hover{background:#30363d;border-color:#8b949e}
+
+/* Form utility */
+.form-row{display:flex;gap:12px;align-items:flex-start}
+.form-row .col{flex:1;min-width:0}
+.form-control{
+  width: 100%;
+  padding: 8px;
+  border-radius: 6px;
+  border: 1px solid #30363d;
+  background: #0d1117;
+  color: #f0f6fc;
+}
+
+.form-control:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(88,166,255,0.12);
+  border-color: #58a6ff;
+}
+
+.form-control:hover {
+  border-color: #8b949e;
+}
+
+/* Responsive tweaks */
+@media (max-width:700px){
+	.container{padding:12px;margin:12px}
+	.form-row{flex-direction:column}
+	.row-cols-2{display:grid;grid-template-columns:1fr;gap:12px}
+}
+
+
+/* Small UI tokens */
+.pill{display:inline-block;padding:4px 8px;border-radius:999px;font-size:12px;color:white}
+
+/* Issue list specifics */
+.issue-row{border:1px solid rgba(240,246,252,0.03);padding:12px;margin-bottom:10px;border-radius:6px;background:linear-gradient(180deg, rgba(255,255,255,0.008), transparent)}
+.muted{color:var(--muted)}
+
+/* Improved issue list layout */
+.issue-list-header{display:flex;justify-content:space-between;align-items:center;gap:16px;margin-bottom:20px;flex-wrap:wrap}
+.issue-actions{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+.filters-row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.filters-row .form-control{min-width:120px;max-width:220px}
+
+.issue-row{display:grid;grid-template-columns:1fr 200px;gap:18px;padding:16px;margin-bottom:14px;border-radius:10px;border:1px solid rgba(48,54,61,0.6);background:linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.005))}
+.issue-row h3{margin:0 0 8px 0;font-size:18px}
+.issue-description{margin:0 0 10px 0}
+.issue-meta{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.issue-row-controls{display:flex;flex-direction:column;gap:10px;min-width:140px;width:180px;align-items:stretch}
+
+/* Pagination container */
+.pagination-container{display:flex;justify-content:center;align-items:center;gap:8px;margin-top:18px}
+
+@media (max-width:760px){
+	.issue-row{grid-template-columns:1fr}
+	.issue-row-controls{width:100%;min-width:0;flex-direction:row;justify-content:space-between}
+	.issue-row-controls .form-control{max-width:48%}
+}
+
+/* GitHub-style project list design */
+.project-list-container {
+  background: #0d1117;
+  border: 1px solid #30363d;
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.project-list-item {
+  padding: 16px;
+  border-bottom: 1px solid #21262d;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  transition: background-color 0.15s ease;
+  cursor: pointer;
+}
+
+.project-list-item:last-child {
+  border-bottom: none;
+}
+
+.project-list-item:hover {
+  background-color: rgba(56, 139, 253, 0.05);
+}
+
+.project-main-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.project-name {
+  color: #58a6ff;
+  font-size: 20px;
+  font-weight: 600;
+  text-decoration: none;
+  margin-bottom: 4px;
+  display: inline-block;
+  line-height: 1.25;
+}
+
+.project-name:hover {
+  text-decoration: underline;
+}
+
+.project-visibility {
+  display: inline-block;
+  padding: 0 7px;
+  font-size: 12px;
+  font-weight: 500;
+  color: #7d8590;
+  border: 1px solid #30363d;
+  border-radius: 2em;
+  margin-left: 8px;
+  vertical-align: middle;
+}
+
+.project-description {
+  color: #7d8590;
+  font-size: 14px;
+  margin: 8px 0 0 0;
+  line-height: 1.4;
+}
+
+.project-meta {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  font-size: 12px;
+  color: #7d8590;
+  margin-top: 8px;
+}
+
+.project-language {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.language-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.project-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-left: 16px;
+}
+
+.edit-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border: 1px solid #30363d;
+  border-radius: 6px;
+  background: transparent;
+  color: #7d8590;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.edit-button:hover {
+  background-color: rgba(177, 186, 196, 0.12);
+  border-color: #8b949e;
+  color: #f0f6fc;
+}
+
+.edit-button svg {
+  width: 16px;
+  height: 16px;
+}
+
+.project-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+/* Modal styles with animations */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(1, 4, 9, 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  opacity: 0;
+  animation: modalFadeIn 0.2s ease-out forwards;
+}
+
+.modal-content {
+  background: #0d1117;
+  border: 1px solid #30363d;
+  border-radius: 12px;
+  padding: 0;
+  width: 90%;
+  max-width: 600px;
+  max-height: 90vh;
+  overflow-y: auto;
+  transform: scale(0.9) translateY(-20px);
+  opacity: 0;
+  animation: modalContentIn 0.3s ease-out 0.1s forwards;
+}
+
+@keyframes modalFadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes modalContentIn {
+  from {
+    transform: scale(0.9) translateY(-20px);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1) translateY(0);
+    opacity: 1;
+  }
+}
+
+.modal-overlay.closing {
+  animation: modalFadeOut 0.2s ease-in forwards;
+}
+
+.modal-overlay.closing .modal-content {
+  animation: modalContentOut 0.2s ease-in forwards;
+}
+
+@keyframes modalFadeOut {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes modalContentOut {
+  from {
+    transform: scale(1) translateY(0);
+    opacity: 1;
+  }
+  to {
+    transform: scale(0.9) translateY(-20px);
+    opacity: 0;
+  }
+}
+
+.modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 24px;
+  border-bottom: 1px solid #21262d;
+}
+
+.modal-header h3 {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 600;
+  color: #f0f6fc;
+}
+
+.modal-close {
+  background: none;
+  border: none;
+  font-size: 24px;
+  color: #7d8590;
+  cursor: pointer;
+  padding: 4px 8px;
+  margin: -4px -8px;
+  border-radius: 6px;
+  transition: all 0.15s ease;
+}
+
+.modal-close:hover {
+  background: #21262d;
+  color: #f0f6fc;
+}
+
+.modal-content form {
+  padding: 20px 24px;
+}
+
+.modal-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+  margin-top: 20px;
+}
+
+/* Project search input */
+.project-search-input {
+  background: #0d1117 !important;
+  border: 1px solid #30363d !important;
+  color: #f0f6fc !important;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.project-search-input:focus {
+  outline: none !important;
+  border-color: #58a6ff !important;
+  box-shadow: 0 0 0 3px rgba(88, 166, 255, 0.12) !important;
+}
+
+.project-search-input:hover {
+  border-color: #8b949e !important;
+}
+
+.project-search-input::placeholder {
+  color: #7d8590 !important;
+  opacity: 1;
+}
+
+/* GitHub-style back button */
+.gh-btn {
+  display: inline-flex;
+  align-items: center;
+  padding: 8px 16px;
+  border: 1px solid #30363d;
+  border-radius: 6px;
+  background: transparent;
+  color: #58a6ff;
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 500;
+  transition: all 0.15s ease;
+}
+
+.gh-btn:hover {
+  background: rgba(56, 139, 253, 0.1);
+  border-color: #58a6ff;
+  text-decoration: none;
+}
+
+/* Issues page layout improvements */
+.issues-filters-container {
+  background: rgba(13, 17, 23, 0.6);
+  border: 1px solid #30363d;
+  border-radius: 8px;
+  padding: 16px;
+  margin-bottom: 24px;
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  flex-wrap: wrap;
+}
+
+.issues-filters-container .form-control {
+  width: auto;
+  min-width: 0;
+}
+
+@media (max-width: 768px) {
+  .issues-filters-container {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .issues-filters-container .form-control {
+    width: 100%;
+    max-width: none;
+    margin-right: 0 !important;
+  }
+}
+
+.issues-header {
+  border-bottom: 1px solid #21262d;
+  padding-bottom: 16px;
+  margin-bottom: 24px;
+}
+
+.issues-header h1 {
+  margin: 0 0 8px 0;
+  font-size: 32px;
+  font-weight: 600;
+  color: #f0f6fc;
+}
+
+.issues-header .project-description {
+  font-size: 16px;
+  color: #7d8590;
+  margin: 0 0 16px 0;
+  line-height: 1.5;
+}
+
+.issues-header .section-label {
+  color: #7d8590;
+  font-size: 14px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* Dashboard background gradient */
+.dashboard-container{
+  background: linear-gradient(135deg, #0d1117 0%, #161b22 100%);
+  min-height: 100vh;
+}
+
+/* GitHub-style small button (used for 'Back to Projects') */
+.gh-btn{
+	display:inline-block;
+	padding:6px 10px;
+	background:#0b1116; /* subtle darker */
+	color:#58a6ff;
+	border:1px solid rgba(88,166,255,0.12);
+	border-radius:6px;
+	font-size:13px;
+	text-decoration:none;
+}
+.gh-btn:hover{
+	background:linear-gradient(180deg, rgba(88,166,255,0.03), rgba(88,166,255,0.01));
+	box-shadow:0 4px 12px rgba(2,6,23,0.45);
+}
+
+/* Larger CTA variant for landing hero */
+.cta-large{
+  padding:18px 28px !important;
+  font-size:20px !important;
+  border-radius:12px !important;
+  font-weight:700;
+}
+
+/* Make scrollbar dark */
+::-webkit-scrollbar{width:12px;height:12px}
+::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.04);border-radius:10px}
+
+/* Code block */
+pre,code{background:var(--code-bg);color:var(--text);padding:6px;border-radius:6px}
+
+/* Responsive */
+@media (max-width:640px){.container{padding:12px;margin:12px}}

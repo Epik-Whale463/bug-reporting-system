@@ -1,0 +1,16 @@
+.pixelBlastContainer{width:100%;height:100%;position:absolute;left:0;top:0;pointer-events:none;z-index:0}
+.landingForeground{position:relative;z-index:2;display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;padding:40px}
+.landingHero{
+  font-weight: 900;
+  color: var(--text);
+  letter-spacing: -6px;
+  text-align: center;
+  /* crisp white outline: multiple 1px offsets to form a sharp shadow */
+  text-shadow: -1px -1px 0 #ffffff, 1px -1px 0 #ffffff, -1px 1px 0 #ffffff, 1px 1px 0 #ffffff;
+}
+.landingCta{margin-top:28px}
+.landingCta .gh-btn{padding:14px 22px;font-size:18px;border-radius:10px}
+
+@media (max-width:700px){
+  .landingHero{font-size:42px;letter-spacing:-2px}
+}

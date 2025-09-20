@@ -1,0 +1,9 @@
+Django>=4.2
+djangorestframework
+djangorestframework-simplejwt
+psycopg2-binary # if using Postgres
+
+# Optional for swagger
+drf-spectacular
+drf-nested-routers
+django-cors-headers
