@@ -13,4 +13,4 @@ COPY . /app
 ENV DJANGO_SETTINGS_MODULE=backend.settings
 
 # Run migrations and start server
-CMD python manage.py migrate && gunicorn backend.wsgi:application --bind 0.0.0.0:8000
+CMD ["sh", "-c", "python manage.py migrate && gunicorn backend.wsgi:application --bind 0.0.0.0:8000"]
