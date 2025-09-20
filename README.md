@@ -1,4 +1,4 @@
-# Bug Reporting System - Assignment
+# Bug Reporting System
 
 This workspace contains two folders: `backend` (Django REST) and `frontend` (Next.js).
 
