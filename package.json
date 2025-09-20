@@ -1,9 +1,0 @@
-{
-  "name": "bug-reporting-system",
-  "version": "1.0.0",
-  "scripts": {
-    "build": "echo 'Building application...'",
-    "start": "echo 'This is a multi-service application. Please check individual services.'"
-  },
-  "description": "Full-stack bug reporting system with Django backend and Next.js frontend"
-}
