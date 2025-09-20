@@ -12,6 +12,5 @@ COPY . /app
 
 ENV DJANGO_SETTINGS_MODULE=backend.settings
 
-# Remove collectstatic (not needed for API-only backend)
-
-CMD ["gunicorn", "backend.wsgi:application", "--bind", "0.0.0.0:8000"]
+# Run migrations and start server
+CMD python manage.py migrate && gunicorn backend.wsgi:application --bind 0.0.0.0:8000
