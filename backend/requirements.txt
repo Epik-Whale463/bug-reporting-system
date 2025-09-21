@@ -1,7 +1,9 @@
 Django>=4.2
 djangorestframework
 djangorestframework-simplejwt
-psycopg2-binary # if using Postgres
+psycopg2-binary  # PostgreSQL adapter
+dj-database-url  # Database URL parsing for production
+python-decouple  # Environment variable management
 
 # Optional for swagger
 drf-spectacular
@@ -10,3 +12,6 @@ django-cors-headers
 
 # Production WSGI server
 gunicorn
+
+# Static file serving
+whitenoise
