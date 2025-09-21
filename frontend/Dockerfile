@@ -12,14 +12,12 @@ COPY package.json package-lock.json* ./
 # Install dependencies
 RUN npm ci
 
-# Copy source code explicitly
-COPY src/ ./src/
-COPY jsconfig.json next.config.js ./
-
-# Files are now copied correctly
+# Copy ALL source files (including lib directory)
+COPY . .
 
 # Set environment variables
 ENV NEXT_TELEMETRY_DISABLED=1
+ENV NODE_ENV=production
 
 # Build the application
 RUN npm run build

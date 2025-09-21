@@ -126,6 +126,11 @@ else:
         # Add your production domain here when you have one
         # "https://yourdomain.com",
     ]
+    
+    # Add CORS origins from environment variable
+    if os.getenv('CORS_ALLOWED_ORIGINS'):
+        CORS_ALLOWED_ORIGINS.extend(os.getenv('CORS_ALLOWED_ORIGINS').split(','))
+    
     CORS_ALLOW_ALL_ORIGINS = False
 
 # Additional CORS settings for production
