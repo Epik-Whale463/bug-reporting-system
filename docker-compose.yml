@@ -17,7 +17,9 @@ services:
       - db
 
   frontend:
-    build: ./frontend
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
     expose:
       - "3000"
     environment:
