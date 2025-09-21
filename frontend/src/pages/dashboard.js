@@ -115,8 +115,7 @@ export default function Dashboard(){
           {user && (
             <aside className="dashboard-sidebar">
               <div className="welcome-message">
-                <h2>Hello there, {user.username}! 👋</h2>
-                <p>Welcome back to your project dashboard</p>
+                <h2>Hey, {user.username}</h2>
               </div>
             </aside>
           )}
