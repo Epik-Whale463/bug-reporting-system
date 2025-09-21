@@ -12,16 +12,15 @@ COPY package.json package-lock.json* ./
 # Install dependencies
 RUN npm ci
 
-# Copy source code
-COPY . .
+# Copy source code explicitly
+COPY src/ ./src/
+COPY jsconfig.json next.config.js ./
 
 # Debug: Check the file structure
 RUN echo "=== Root directory ===" && ls -la
-RUN echo "=== src directory ===" && ls -la src/
-RUN echo "=== lib directory ===" && ls -la src/lib/
-RUN echo "=== Check api.js exists ===" && test -f src/lib/api.js && echo "api.js exists" || echo "api.js NOT found"
-RUN echo "=== Check CommentThread.js ===" && head -3 src/components/CommentThread.js
-RUN echo "=== Test Node.js module resolution ===" && node -e "console.log('Testing require resolution...'); console.log('Current working directory:', process.cwd()); const fs = require('fs'); console.log('api.js exists:', fs.existsSync('./src/lib/api.js')); console.log('CommentThread.js exists:', fs.existsSync('./src/components/CommentThread.js'));"
+RUN echo "=== Check if src exists ===" && test -d src && echo "src directory exists" || echo "src directory NOT found"
+RUN echo "=== src directory contents ===" && ls -la src/ || echo "Cannot list src directory"
+RUN echo "=== Check if src/lib exists ===" && test -d src/lib && echo "src/lib directory exists" || echo "src/lib directory NOT found"
 
 # Set environment variables
 ENV NEXT_TELEMETRY_DISABLED=1
