@@ -15,15 +15,7 @@ RUN npm ci
 # Copy ALL source files (including lib directory)
 COPY . .
 
-# Debug: Check what files were actually copied
-RUN echo "=== Checking copied files ===" && \
-    ls -la && \
-    echo "=== src directory ===" && \
-    ls -la src/ && \
-    echo "=== lib directory ===" && \
-    ls -la src/lib/ && \
-    echo "=== api.js content ===" && \
-    head -5 src/lib/api.js
+# All files are now properly copied
 
 # Set environment variables
 ENV NEXT_TELEMETRY_DISABLED=1
