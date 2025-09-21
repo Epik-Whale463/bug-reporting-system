@@ -1,6 +1,6 @@
 import Link from 'next/link'
-import PixelBlast from '@/components/PixelBlast'
-import styles from '@/components/PixelBlast.module.css'
+import PixelBlast from '../components/PixelBlast.js'
+import styles from '../components/PixelBlast.module.css'
 
 export default function Landing() {
   return (

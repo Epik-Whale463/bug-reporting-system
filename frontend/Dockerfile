@@ -15,6 +15,32 @@ RUN npm ci
 # Copy source code
 COPY . .
 
+# Debug: Check the file structure
+RUN echo "=== Root directory ===" && ls -la
+RUN echo "=== src directory ===" && ls -la src/
+RUN echo "=== lib directory ===" && ls -la src/lib/
+RUN echo "=== Check api.js exists ===" && test -f src/lib/api.js && echo "api.js exists" || echo "api.js NOT found"
+RUN echo "=== Check CommentThread.js ===" && head -3 src/components/CommentThread.js
+RUN echo "=== Test Node.js module resolution ===" && node -e "
+try {
+  console.log('Testing require resolution...');
+  console.log('Current working directory:', process.cwd());
+  const fs = require('fs');
+  const path = require('path');
+  
+  // Check if files exist
+  console.log('api.js exists:', fs.existsSync('./src/lib/api.js'));
+  console.log('CommentThread.js exists:', fs.existsSync('./src/components/CommentThread.js'));
+  
+  // Try to require the api module
+  const apiPath = path.resolve('./src/lib/api.js');
+  console.log('Resolved api path:', apiPath);
+  
+} catch(e) {
+  console.error('Error:', e.message);
+}
+"
+
 # Set environment variables
 ENV NEXT_TELEMETRY_DISABLED=1
 

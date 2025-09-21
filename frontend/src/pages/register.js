@@ -1,7 +1,7 @@
 import { useState } from 'react'
-import api from '@/lib/api'
+import api from '../lib/api.js'
 import Link from 'next/link'
-import PixelBlast from '@/components/PixelBlast'
+import PixelBlast from '../components/PixelBlast.js'
 
 export default function Register(){
   const [username,setUsername] = useState('')
