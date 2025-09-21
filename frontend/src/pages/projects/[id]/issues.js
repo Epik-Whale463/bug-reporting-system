@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/router'
-import api from '../../../lib/api.js'
+import api from '../../../lib/api'
 import Link from 'next/link'
 
 export default function ProjectIssues() {

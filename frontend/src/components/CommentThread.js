@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import api from '../lib/api.js'
+import api from '../lib/api'
 
 const CommentThread = ({ comment, issueId, onCommentAdded, depth = 0 }) => {
   const [showReplyForm, setShowReplyForm] = useState(false)
