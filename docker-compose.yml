@@ -13,8 +13,8 @@ services:
       - PYTHONUNBUFFERED=1
       - DATABASE_URL=postgresql://postgres:securepassword123@db:5432/bugtracker
       - DEBUG=False
-      - ALLOWED_HOSTS=localhost,127.0.0.1,YOUR_DROPLET_IP
-      - CORS_ALLOWED_ORIGINS=http://localhost:3000,http://YOUR_DROPLET_IP:3000
+      - ALLOWED_HOSTS=localhost,127.0.0.1,139.59.26.29
+      - CORS_ALLOWED_ORIGINS=http://localhost:3000,http://139.59.26.29:3000
     depends_on:
       - db
 
@@ -25,7 +25,7 @@ services:
     expose:
       - "3000"
     environment:
-      - NEXT_PUBLIC_API_URL=http://YOUR_DROPLET_IP:8000/api
+      - NEXT_PUBLIC_API_URL=http://139.59.26.29:8000/api
       - NODE_ENV=production
     depends_on:
       - backend
