@@ -12,13 +12,6 @@ const nextConfig = {
   
   // Trailing slash configuration for consistency
   trailingSlash: false,
-  
-  // Webpack configuration to support absolute imports
-  webpack: (config) => {
-    // Ensure module resolution works correctly
-    config.resolve.modules = ['node_modules', 'src']
-    return config
-  },
 }
 
 module.exports = nextConfig
