@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import api from '../lib/api'
+import { handleApiError, showNotification } from '../lib/errorHandling'
 import Link from 'next/link'
 import PixelBlast from '../components/PixelBlast'
 
@@ -22,11 +23,12 @@ export default function Login() {
       const res = await api.post('/auth/login/', { username, password })
       localStorage.setItem('token', res.data.access)
       if (res.data.refresh) localStorage.setItem('refreshToken', res.data.refresh)
+      showNotification('Login successful!', 'success')
       window.location.href = '/dashboard'
     } catch (err) {
       console.error('Login error:', err)
-      if (err.response?.status === 401) setError('Invalid username or password')
-      else setError(err.response?.data?.detail || err.response?.data || 'Login failed')
+      const errorMessage = handleApiError(err, 'Login failed')
+      setError(errorMessage)
     } finally { setLoading(false) }
   }
 

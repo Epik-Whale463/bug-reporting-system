@@ -43,8 +43,8 @@ body{
   padding: 36px;
   border-radius: 18px;
   box-shadow: var(--card-shadow);
-  backdrop-filter: blur(4px);
   -webkit-backdrop-filter: blur(4px);
+  backdrop-filter: blur(4px);
 }
 
 /* Typography */

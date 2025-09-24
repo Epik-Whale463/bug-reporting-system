@@ -1,6 +1,7 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { useRouter } from 'next/router'
 import api from '../../../lib/api'
+import { handleApiError, showNotification, withErrorHandling } from '../../../lib/errorHandling'
 import Link from 'next/link'
 
 export default function ProjectIssues() {
@@ -29,6 +30,12 @@ export default function ProjectIssues() {
   const [totalPages, setTotalPages] = useState(1)
   const [totalCount, setTotalCount] = useState(0)
   const [pageSize] = useState(10)
+  
+  // Infinite scroll state
+  const [hasNextPage, setHasNextPage] = useState(false)
+  const [loadingMore, setLoadingMore] = useState(false)
+  const [infiniteScrollMode, setInfiniteScrollMode] = useState(false)
+  const observerRef = useRef()
 
   // Debounce search input
   useEffect(() => {
@@ -51,11 +58,45 @@ export default function ProjectIssues() {
     loadCurrentUser()
   }, [id])
 
-  // Load issues when page, filters, or search changes
+  // Load issues when filters or search changes (but not page for infinite scroll)
   useEffect(() => {
     if (!id) return
+    if (infiniteScrollMode) {
+      setCurrentPage(1)
+      setIssues([])
+    }
     loadIssues()
-  }, [id, currentPage, statusFilter, priorityFilter, searchQuery])
+  }, [id, statusFilter, priorityFilter, searchQuery])
+
+  // Load issues when page changes (for pagination mode only)
+  useEffect(() => {
+    if (!id || infiniteScrollMode) return
+    loadIssues()
+  }, [currentPage])
+
+  // Infinite scroll intersection observer
+  useEffect(() => {
+    if (!infiniteScrollMode || !hasNextPage || loadingMore) return
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && hasNextPage && !loadingMore) {
+          loadIssues(true)
+        }
+      },
+      { threshold: 0.1 }
+    )
+
+    if (observerRef.current) {
+      observer.observe(observerRef.current)
+    }
+
+    return () => {
+      if (observerRef.current) {
+        observer.unobserve(observerRef.current)
+      }
+    }
+  }, [infiniteScrollMode, hasNextPage, loadingMore])
 
   const loadProjectData = async () => {
     try {
@@ -88,13 +129,14 @@ export default function ProjectIssues() {
     }
   }
 
-  const loadIssues = async () => {
+  const loadIssues = async (append = false) => {
     try {
-      setLoading(true)
+      if (!append) setLoading(true)
+      else setLoadingMore(true)
       
       // Build query parameters
       const params = new URLSearchParams()
-      params.append('page', currentPage.toString())
+      params.append('page', append ? currentPage + 1 : currentPage)
       
       if (searchQuery) {
         params.append('search', searchQuery)
@@ -110,14 +152,25 @@ export default function ProjectIssues() {
       
       // Handle paginated response
       if (issuesRes.data.results) {
-        setIssues(issuesRes.data.results)
+        if (append) {
+          setIssues(prev => [...prev, ...issuesRes.data.results])
+          setCurrentPage(prev => prev + 1)
+        } else {
+          setIssues(issuesRes.data.results)
+        }
         setTotalCount(issuesRes.data.count)
         setTotalPages(Math.ceil(issuesRes.data.count / pageSize))
+        setHasNextPage(!!issuesRes.data.next)
       } else {
         // Fallback for non-paginated response
-        setIssues(issuesRes.data)
+        if (append) {
+          setIssues(prev => [...prev, ...issuesRes.data])
+        } else {
+          setIssues(issuesRes.data)
+        }
         setTotalCount(issuesRes.data.length)
         setTotalPages(1)
+        setHasNextPage(false)
       }
 
       // Extract users from issues if users weren't loaded separately
@@ -140,7 +193,8 @@ export default function ProjectIssues() {
     } catch (err) {
       setError(err.response?.data?.detail || err.message)
     } finally {
-      setLoading(false)
+      if (!append) setLoading(false)
+      else setLoadingMore(false)
     }
   }
   const createIssue = async (e) => {
@@ -200,7 +254,7 @@ export default function ProjectIssues() {
   }
 
   const Pagination = () => {
-    if (totalPages <= 1) return null
+    if (infiniteScrollMode || totalPages <= 1) return null
 
     const pages = []
     const maxVisiblePages = 5
@@ -298,11 +352,39 @@ export default function ProjectIssues() {
 
       {/* Actions and Filters Section */}
   <div style={{ marginBottom: 28 }}>
-        {/* Create Issue Button */}
-        <div style={{ marginBottom: 16 }}>
+        {/* Create Issue Button and View Toggle */}
+        <div style={{ marginBottom: 16, display: 'flex', gap: 12, alignItems: 'center', justifyContent: 'space-between' }}>
           <button onClick={() => setShowCreateForm(!showCreateForm)} className="btn btn-primary">
             {showCreateForm ? 'Cancel' : 'Create Issue'}
           </button>
+          
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <label style={{ fontSize: '14px', color: 'var(--text-secondary)' }}>View:</label>
+            <button 
+              onClick={() => {
+                setInfiniteScrollMode(false)
+                setCurrentPage(1)
+                setIssues([])
+                loadIssues()
+              }}
+              className={`btn ${!infiniteScrollMode ? 'btn-success' : 'btn-secondary'}`}
+              style={{ padding: '6px 12px', fontSize: '12px' }}
+            >
+              Pagination
+            </button>
+            <button 
+              onClick={() => {
+                setInfiniteScrollMode(true)
+                setCurrentPage(1)
+                setIssues([])
+                loadIssues()
+              }}
+              className={`btn ${infiniteScrollMode ? 'btn-success' : 'btn-secondary'}`}
+              style={{ padding: '6px 12px', fontSize: '12px' }}
+            >
+              Infinite Scroll
+            </button>
+          </div>
         </div>
 
         {/* Filters Row */}
@@ -484,6 +566,41 @@ export default function ProjectIssues() {
                 </div>
               </div>
             ))}
+            
+            {/* Infinite Scroll Trigger */}
+            {infiniteScrollMode && hasNextPage && (
+              <div 
+                ref={observerRef}
+                style={{ 
+                  height: '50px', 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  justifyContent: 'center',
+                  margin: '20px 0'
+                }}
+              >
+                {loadingMore ? (
+                  <div>Loading more issues...</div>
+                ) : (
+                  <div style={{ color: 'var(--text-secondary)', fontSize: '14px' }}>
+                    Scroll to load more
+                  </div>
+                )}
+              </div>
+            )}
+            
+            {/* Load More Button (alternative to intersection observer) */}
+            {infiniteScrollMode && hasNextPage && !loadingMore && (
+              <div style={{ textAlign: 'center', margin: '20px 0' }}>
+                <button 
+                  onClick={() => loadIssues(true)}
+                  className="btn btn-secondary"
+                  disabled={loadingMore}
+                >
+                  Load More Issues
+                </button>
+              </div>
+            )}
             
             <Pagination />
           </div>

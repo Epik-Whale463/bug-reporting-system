@@ -1,13 +1,24 @@
 from rest_framework import serializers
-from .models import Project, Issue, Comment
+from .models import Project, Issue, Comment, UserProfile
 from django.contrib.auth import get_user_model
 
 User = get_user_model()
 
+class UserProfileSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = UserProfile
+        fields = ('role', 'can_create_projects', 'can_delete_issues', 'can_assign_issues')
+
 class UserSerializer(serializers.ModelSerializer):
+    profile = UserProfileSerializer(read_only=True)
+    role = serializers.CharField(source='profile.role', read_only=True)
+    can_create_projects = serializers.BooleanField(source='profile.can_create_projects', read_only=True)
+    can_delete_issues = serializers.BooleanField(source='profile.can_delete_issues', read_only=True)
+    can_assign_issues = serializers.BooleanField(source='profile.can_assign_issues', read_only=True)
+    
     class Meta:
         model = User
-        fields = ('id','username','email')
+        fields = ('id','username','email','profile','role','can_create_projects','can_delete_issues','can_assign_issues')
 
 class ProjectSerializer(serializers.ModelSerializer):
     owner = UserSerializer(read_only=True)

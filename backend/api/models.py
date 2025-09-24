@@ -1,7 +1,45 @@
 from django.db import models
 from django.contrib.auth import get_user_model
+from django.db.models.signals import post_save
+from django.dispatch import receiver
 
 User = get_user_model()
+
+class UserProfile(models.Model):
+    ROLE_CHOICES = [
+        ('admin', 'Admin'),
+        ('project_manager', 'Project Manager'),
+        ('developer', 'Developer'),
+        ('tester', 'Tester'),
+        ('guest', 'Guest'),
+    ]
+    
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='profile')
+    role = models.CharField(max_length=20, choices=ROLE_CHOICES, default='developer')
+    can_create_projects = models.BooleanField(default=True)
+    can_delete_issues = models.BooleanField(default=False)
+    can_assign_issues = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+    
+    def __str__(self):
+        return f"{self.user.username} - {self.get_role_display()}"
+    
+    @property
+    def is_admin(self):
+        return self.role == 'admin'
+    
+    @property
+    def is_project_manager(self):
+        return self.role == 'project_manager'
+    
+    @property
+    def can_manage_all_projects(self):
+        return self.role in ['admin', 'project_manager']
+
+@receiver(post_save, sender=User)
+def create_user_profile(sender, instance, created, **kwargs):
+    if created:
+        UserProfile.objects.create(user=instance)
 
 class Project(models.Model):
     name = models.CharField(max_length=200)
