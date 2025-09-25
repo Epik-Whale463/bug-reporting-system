@@ -1,3 +1,5 @@
+# Ignore Django generated static files
+backend/staticfiles/
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
@@ -346,7 +348,6 @@ static/
 # Configuration files with secrets
 local_settings.py
 production_settings.py
-backend/api/migrations/0003_project_owner.py
 .env.production
 .env.staging
 
@@ -356,7 +357,6 @@ backend/api/migrations/0003_project_owner.py
 *.swp
 *.swo
 *~
-
 # OS generated files
 .DS_Store
 .DS_Store?
@@ -369,3 +369,6 @@ Thumbs.db
 # Package manager lock files (optional - comment out if you want to commit them)
 # package-lock.json
 # yarn.lock
+
+
+backend/staticfiles/
