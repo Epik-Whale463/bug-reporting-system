@@ -126,6 +126,8 @@ else:
     CORS_ALLOWED_ORIGINS = [
         "http://localhost",
         "https://localhost",
+        "http://139.59.26.29",
+        "https://139.59.26.29",
         # Add your production domain here when you have one
         # "https://yourdomain.com",
     ]
