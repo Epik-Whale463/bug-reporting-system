@@ -45,7 +45,7 @@ MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
-    'django.middleware.csrf.CsrfViewMiddleware',
+    # 'django.middleware.csrf.CsrfViewMiddleware',  # Temporarily disable CSRF for debugging
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
@@ -117,26 +117,28 @@ SPECTACULAR_SETTINGS = {
     'VERSION': '1.0.0',
 }
 
-# CORS settings
-if DEBUG:
-    # Development: Allow all origins
-    CORS_ALLOW_ALL_ORIGINS = True
-else:
-    # Production: Restrict to specific origins
-    CORS_ALLOWED_ORIGINS = [
-        "http://localhost",
-        "https://localhost",
-        "http://139.59.26.29",
-        "https://139.59.26.29",
-        # Add your production domain here when you have one
-        # "https://yourdomain.com",
-    ]
-    
-    # Add CORS origins from environment variable
-    if os.getenv('CORS_ALLOWED_ORIGINS'):
-        CORS_ALLOWED_ORIGINS.extend(os.getenv('CORS_ALLOWED_ORIGINS').split(','))
-    
-    CORS_ALLOW_ALL_ORIGINS = False
+# CORS settings - temporarily allow all origins to debug
+CORS_ALLOW_ALL_ORIGINS = True
+
+# if DEBUG:
+#     # Development: Allow all origins
+#     CORS_ALLOW_ALL_ORIGINS = True
+# else:
+#     # Production: Restrict to specific origins
+#     CORS_ALLOWED_ORIGINS = [
+#         "http://localhost",
+#         "https://localhost",
+#         "http://139.59.26.29",
+#         "https://139.59.26.29",
+#         # Add your production domain here when you have one
+#         # "https://yourdomain.com",
+#     ]
+#     
+#     # Add CORS origins from environment variable
+#     if os.getenv('CORS_ALLOWED_ORIGINS'):
+#         CORS_ALLOWED_ORIGINS.extend(os.getenv('CORS_ALLOWED_ORIGINS').split(','))
+#     
+#     CORS_ALLOW_ALL_ORIGINS = False
 
 # Additional CORS settings for production
 CORS_ALLOW_CREDENTIALS = True

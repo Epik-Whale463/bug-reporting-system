@@ -13,6 +13,11 @@ const nextConfig = {
   // Trailing slash configuration for consistency
   trailingSlash: false,
   
+  // Ensure environment variables are available at runtime
+  env: {
+    NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL || '/api',
+  },
+  
   // Webpack configuration for better module resolution
   webpack: (config) => {
     // Ensure proper module resolution

@@ -1,7 +1,18 @@
 import axios from 'axios'
 
+// Get API URL with proper fallback for production
+const getApiUrl = () => {
+  // Check if we have the env var available
+  if (process.env.NEXT_PUBLIC_API_URL) {
+    return process.env.NEXT_PUBLIC_API_URL;
+  }
+  
+  // In production, always use relative path to current domain
+  return '/api';
+}
+
 const api = axios.create({
-  baseURL: (typeof window !== 'undefined' && window.__NEXT_DATA__ && window.__NEXT_DATA__.env && window.__NEXT_DATA__.env.NEXT_PUBLIC_API_URL) || process.env.NEXT_PUBLIC_API_URL || '/api',
+  baseURL: getApiUrl(),
   headers: { 'Content-Type': 'application/json' }
 })
 
