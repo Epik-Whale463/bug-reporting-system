@@ -18,6 +18,16 @@ const nextConfig = {
     NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL || '/api',
   },
   
+  // Proxy API requests to Django backend in development
+  async rewrites() {
+    return [
+      {
+        source: '/api/:path*',
+        destination: 'http://localhost:8000/api/:path*',
+      },
+    ];
+  },
+  
   // Webpack configuration for better module resolution
   webpack: (config) => {
     // Ensure proper module resolution
