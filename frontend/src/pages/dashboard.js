@@ -110,20 +110,11 @@ export default function Dashboard(){
   return (
     <div className="dashboard-container">
       <div className="container">
-        <div className="dashboard-layout">
-          {/* Welcome Sidebar */}
-          {user && (
-            <aside className="dashboard-sidebar">
-              <div className="welcome-message">
-                <h2>Hey, {user.username}</h2>
-              </div>
-            </aside>
-          )}
-          
+        <div className="dashboard-layout">          
           {/* Main Content */}
           <main className="dashboard-main">
             <div className="dashboard-header">
-              <h1 style={{fontSize:'36px', fontWeight:'800', margin:'0', letterSpacing:'-0.02em'}}>Projects</h1>
+              <h1 style={{fontSize:'36px', fontWeight:'800', margin:'0', letterSpacing:'-0.005em'}}>Projects</h1>
               <button onClick={handleLogout} className="btn btn-danger">
                 Logout
               </button>

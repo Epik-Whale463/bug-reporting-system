@@ -38,13 +38,22 @@ class IsOwnerOrReadOnly(permissions.BasePermission):
         # Write permissions only to the owner of the project
         return obj.owner == request.user
 
-class IsReporterOrAssigneeOrReadOnly(permissions.BasePermission):
+class IssueCreateOrReadPermission(permissions.BasePermission):
     """
     Custom permissions for issues:
-    - Everyone can view issues
-    - Reporter or assignee can update issue details (status, description, etc.)
-    - Only project owner can assign/reassign issues
+    - Everyone can view and create issues in any project
+    - Only project owners can update issue status and assignments
+    - Issue reporters can update their own issue details (title, description)
     """
+    def has_permission(self, request, view):
+        # Allow read and create for everyone (authenticated users)
+        if request.method in permissions.SAFE_METHODS:
+            return True
+        if request.method == 'POST':
+            return request.user.is_authenticated
+        # For PUT/PATCH/DELETE, check object-level permissions
+        return request.user.is_authenticated
+    
     def has_object_permission(self, request, view, obj):
         # Read permissions for EVERYONE
         if request.method in permissions.SAFE_METHODS:
@@ -54,9 +63,21 @@ class IsReporterOrAssigneeOrReadOnly(permissions.BasePermission):
         if not user.is_authenticated:
             return False
         
-        # For updates, allow reporter or assignee to modify
-        # Assignment restrictions are handled in perform_update
-        return obj.reporter == user or obj.assignee == user or obj.project.owner == user
+        # DELETE - only project owner
+        if request.method == 'DELETE':
+            return obj.project.owner == user
+        
+        # For PUT/PATCH - check what's being updated
+        if request.method in ['PUT', 'PATCH']:
+            # Check if trying to update status or assignee - only project owner can do this
+            request_data = getattr(request, 'data', {})
+            if 'status' in request_data or 'assignee' in request_data or 'assignee_id' in request_data:
+                return obj.project.owner == user
+            
+            # Otherwise, allow reporter to update their own issue details
+            return obj.reporter == user or obj.project.owner == user
+        
+        return False
 
 class CanCreateProjects(permissions.BasePermission):
     """
@@ -127,30 +148,19 @@ class CanAssignIssues(permissions.BasePermission):
 
 class ProjectViewSet(viewsets.ModelViewSet):
     serializer_class = ProjectSerializer
-    permission_classes = [permissions.IsAuthenticatedOrReadOnly, IsOwnerOrReadOnly, CanCreateProjects]
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly, IsOwnerOrReadOnly]
     # Enable pagination for projects (uses default pagination)
     # To customize, import and set a pagination class here
     pagination_class = None  # Remove this line to use default pagination
 
     def get_queryset(self):
-        # Return projects based on user role
+        # Return ALL projects for everyone to see (public projects)
         queryset = Project.objects.all().annotate(
             issue_count=Count('issues'),
             open_issues=Count('issues', filter=Q(issues__status='open')),
             in_progress_issues=Count('issues', filter=Q(issues__status='in_progress')),
             closed_issues=Count('issues', filter=Q(issues__status='closed')),
         ).order_by('-created_at')
-        
-        # If user is authenticated and not admin/project_manager, filter to projects they're involved in
-        if self.request.user.is_authenticated:
-            profile = getattr(self.request.user, 'profile', None)
-            if profile and not profile.can_manage_all_projects:
-                # Show projects where user is owner, assigned to issues, or reported issues
-                queryset = queryset.filter(
-                    Q(owner=self.request.user) |
-                    Q(issues__assignee=self.request.user) |
-                    Q(issues__reporter=self.request.user)
-                ).distinct()
         
         return queryset
 
@@ -160,7 +170,7 @@ class ProjectViewSet(viewsets.ModelViewSet):
 
 class IssueViewSet(viewsets.ModelViewSet):
     serializer_class = IssueSerializer
-    permission_classes = [permissions.IsAuthenticatedOrReadOnly, CanDeleteIssues, CanAssignIssues]
+    permission_classes = [IssueCreateOrReadPermission]
 
     def get_queryset(self):
         # Return ALL issues for everyone to see (public dashboard)
@@ -208,32 +218,13 @@ class IssueViewSet(viewsets.ModelViewSet):
             serializer.save(reporter=self.request.user)
 
     def perform_update(self, serializer):
-        # Check if trying to assign/reassign the issue
-        if 'assignee' in self.request.data or 'assignee_id' in self.request.data:
-            issue = self.get_object()
-            profile = getattr(self.request.user, 'profile', None)
-            
-            # Check permissions for assignment
-            can_assign = (
-                profile and (
-                    profile.is_admin or 
-                    profile.can_assign_issues or 
-                    profile.can_manage_all_projects or
-                    issue.project.owner == self.request.user
-                )
-            )
-            
-            if not can_assign:
-                from rest_framework.exceptions import PermissionDenied
-                raise PermissionDenied("You do not have permission to assign issues.")
-        
+        # Permission checks are handled in IssueCreateOrReadPermission
+        # Just save the update
         serializer.save()
 
     def get_permissions(self):
-        # Only reporter or assignee can update or delete an issue, but everyone can view
-        if self.action in ['partial_update', 'update', 'destroy']:
-            return [permissions.IsAuthenticated(), IsReporterOrAssigneeOrReadOnly()]
-        return super().get_permissions()
+        # Use our new permission class for all actions
+        return [IssueCreateOrReadPermission()]
 
 class CommentViewSet(viewsets.ModelViewSet):
     serializer_class = CommentSerializer

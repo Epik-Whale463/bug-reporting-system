@@ -1,16 +1,20 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+@import url('https://api.fontshare.com/v2/css?f[]=satoshi@400,500,600,700,800&display=swap');
+
 :root{
-  --bg:#FFF9F2; /* Soft cream background */
-  --panel:#FFF6ED; /* Slightly deeper cream for panels */
-  --muted:#8B6D47; /* Muted hazel brown for secondary text */
-  --text:#5D4E37; /* Hazel brown for primary text */
-  --accent:#C75A3A; /* Warm terracotta orange */
-  --accent-dark:#A13F23; /* Deeper accent for hover */
-  --success:#238636;
-  --danger:#CF222E;
-  --border:rgba(199,90,58,0.12); /* Soft orange border */
-  --code-bg:#F8F4EF;
-  --card-shadow:0 4px 24px rgba(199,90,58,0.08);
-  --font-main: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  --bg:#FFFFFF; /* Clean white background */
+  --panel:#FEFEFE; /* Subtle off-white for panels */
+  --muted:#6B7280; /* Modern neutral gray for secondary text */
+  --text:#1F2937; /* Dark gray for primary text */
+  --accent:#FF6B35; /* Confident bright orange */
+  --accent-dark:#E55A2B; /* Deeper accent for hover */
+  --success:#10B981;
+  --danger:#EF4444;
+  --border:rgba(107,114,128,0.15); /* Neutral gray border */
+  --code-bg:#F9FAFB;
+  --card-shadow:0 1px 3px rgba(0,0,0,0.05);
+  --font-main: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  --font-satoshi: 'Satoshi', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
   --font-reading: ui-serif, Georgia, 'Times New Roman', serif;
   --font-mono: ui-monospace, 'SF Mono', 'Monaco', 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace;
 }
@@ -22,8 +26,8 @@ body{
   margin:0;padding:0;background:var(--bg);color:var(--text);
   -webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;
 }
-.container{max-width:1000px;margin:32px auto;padding:32px;background:var(--panel);border-radius:18px;box-shadow:var(--card-shadow);}
-.container.wide{max-width:1300px;padding:36px;}
+.container{max-width:1000px;margin:48px auto;padding:48px;background:var(--panel);border-radius:12px;box-shadow:var(--card-shadow);}
+.container.wide{max-width:1300px;padding:56px;}
 
 /* Dashboard container - full width, no borders */
 .dashboard-container .container {
@@ -34,30 +38,32 @@ body{
   border-radius: 0;
   box-shadow: none;
 }
-.card{background:var(--panel);border:1px solid var(--border);padding:28px;border-radius:18px;box-shadow:var(--card-shadow);}
+.card{background:var(--panel);border:1px solid var(--border);padding:32px;border-radius:12px;box-shadow:var(--card-shadow);}
 
-/* Auth card stronger appearance when over animated backgrounds */
+/* Auth card glass transparent design */
 .auth-card{
-  background: var(--panel);
-  border: 1px solid var(--border);
-  padding: 36px;
-  border-radius: 18px;
-  box-shadow: var(--card-shadow);
-  -webkit-backdrop-filter: blur(4px);
-  backdrop-filter: blur(4px);
+  background: rgba(255, 255, 255, 0.85);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  padding: 40px;
+  border-radius: 12px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
 }
 
 /* Typography */
-h1,h2,h3{
+h1,h2,h3,h4,h5{
   color:var(--text);
-  margin:0 0 8px 0;
+  margin:0 0 16px 0;
   font-family:var(--font-main);
   font-weight:700;
-  letter-spacing:-0.01em;
+  letter-spacing:-0.005em;
 }
-h1 { font-weight: 800; font-size: 32px; }
-h2 { font-weight: 700; font-size: 24px; }
-h3 { font-weight: 700; font-size: 18px; }
+h1 { font-weight: 800; font-size: 36px; line-height: 1.1; }
+h2 { font-weight: 700; font-size: 28px; line-height: 1.2; }
+h3 { font-weight: 600; font-size: 20px; line-height: 1.3; }
+h4 { font-weight: 500; font-size: 18px; line-height: 1.4; } /* Issue titles */
+h5 { font-weight: 500; font-size: 16px; line-height: 1.4; } /* Section headings */
 
 /* Welcome message styling */
 .welcome-message {
@@ -84,14 +90,30 @@ h3 { font-weight: 700; font-size: 18px; }
 
 p{
   color:var(--muted);
-  margin:0 0 12px 0;
-  line-height:1.5;
+  margin:0 0 16px 0;
+  line-height:1.6;
+  font-size:15px;
 }
+
+/* Enhanced typography utilities */
+.text-medium { font-weight: 500; }
+.text-semibold { font-weight: 600; }
+.issue-title { font-size: 18px; font-weight: 500; color: var(--text); line-height: 1.4; }
+.section-label { font-size: 14px; font-weight: 500; color: var(--text); text-transform: uppercase; letter-spacing: 0.05em; }
+
+/* Font switching utility - uncomment to try Satoshi */
+/*
+.satoshi-mode {
+  --font-main: var(--font-satoshi);
+}
+.satoshi-mode h1,h2,h3,h4,h5 { letter-spacing: -0.01em; }
+.satoshi-mode .btn { letter-spacing: -0.005em; }
+*/
 
 /* Comment-specific typography */
 .comment-text {
   font-family: var(--font-main);
-  font-size: 14px;
+  font-size: 15px;
   line-height: 1.5;
   color: var(--text);
   font-weight: 400;
@@ -124,17 +146,18 @@ input,textarea,select{
   background: var(--panel);
   border: 1px solid var(--border);
   color: var(--text);
-  padding: 12px 16px;
-  border-radius: 12px;
+  padding: 14px 16px;
+  border-radius: 8px;
   width: 100%;
-  font-size: 1em;
-  transition: border-color 0.2s, box-shadow 0.2s;
+  font-size: 15px;
+  font-family: var(--font-main);
+  transition: border-color 0.15s, box-shadow 0.15s;
 }
 
 input:focus,textarea:focus,select:focus{
   outline: none;
-  box-shadow: 0 0 0 3px rgba(199,90,58,0.12);
   border-color: var(--accent);
+  box-shadow: 0 0 0 1px var(--accent);
 }
 
 select option {
@@ -147,13 +170,13 @@ select:hover {
   border-color: var(--accent);
 }
 
-label{display:block;margin-bottom:6px;color:var(--muted);font-size:13px}
+label{display:block;margin-bottom:8px;color:var(--text);font-size:14px;font-weight:500;letter-spacing:-0.01em;}
 
 /* Buttons */
 .btn{
-    display:inline-flex;align-items:center;justify-content:center;padding:10px 20px;border-radius:12px;border:none;
-    color:var(--text);background:var(--panel);cursor:pointer;font-size:1em;font-weight:500;box-shadow:0 2px 8px rgba(199,90,58,0.04);
-    transition:background 0.2s, color 0.2s;
+    display:inline-flex;align-items:center;justify-content:center;padding:12px 24px;border-radius:8px;border:none;
+    color:var(--text);background:var(--panel);cursor:pointer;font-size:15px;font-weight:500;box-shadow:var(--card-shadow);
+    transition:all 0.15s ease;
 }
 .btn:disabled{opacity:0.6;cursor:not-allowed}
 .btn-primary{background:var(--accent);color:white;font-weight:700;}
@@ -173,19 +196,20 @@ label{display:block;margin-bottom:6px;color:var(--muted);font-size:13px}
 .form-row .col{flex:1;min-width:0}
 .form-control{
   width: 100%;
-  padding: 12px 16px;
-  border-radius: 12px;
+  padding: 14px 16px;
+  border-radius: 8px;
   border: 1px solid var(--border);
   background: var(--panel);
   color: var(--text);
-  font-size: 1em;
-  transition: border-color 0.2s, box-shadow 0.2s;
+  font-size: 15px;
+  font-family: var(--font-main);
+  transition: border-color 0.15s, box-shadow 0.15s;
 }
 
 .form-control:focus {
   outline: none;
-  box-shadow: 0 0 0 3px rgba(199,90,58,0.12);
   border-color: var(--accent);
+  box-shadow: 0 0 0 1px var(--accent);
 }
 
 .form-control:hover {
@@ -216,6 +240,12 @@ label{display:block;margin-bottom:6px;color:var(--muted);font-size:13px}
 .filters-row .form-control{min-width:120px;max-width:220px}
 
 .issue-row{display:grid;grid-template-columns:1fr 260px;gap:22px;padding:18px;margin-bottom:18px;border-radius:12px;border:1px solid rgba(48,54,61,0.6);background:linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.005))}
+/* Issue card hover shadow */
+.issue-row:hover {
+  box-shadow: 0 4px 16px rgba(30, 30, 30, 0.13);
+  border-color: rgba(48,54,61,0.18);
+  transition: box-shadow 0.18s, border-color 0.18s;
+}
 .issue-row h3{margin:0 0 8px 0;font-size:20px}
 .issue-description{margin:0 0 12px 0}
 .issue-meta{display:flex;gap:12px;flex-wrap:wrap;align-items:center}
@@ -525,11 +555,6 @@ label{display:block;margin-bottom:6px;color:var(--muted);font-size:13px}
 
 /* Issues page layout improvements */
 .issues-filters-container {
-  background: var(--panel);
-  border: 1px solid var(--border);
-  border-radius: 16px;
-  padding: 20px;
-  margin-bottom: 24px;
   display: flex;
   gap: 16px;
   align-items: flex-start;
@@ -585,18 +610,16 @@ label{display:block;margin-bottom:6px;color:var(--muted);font-size:13px}
 
 /* Dashboard background */
 .dashboard-container{
-  background: linear-gradient(135deg, var(--bg) 0%, var(--panel) 100%);
+  background: linear-gradient(135deg, #FFF2E9 0%, #FFE4D1 50%, #FFD6B8 100%);
   min-height: 100vh;
   padding: 20px;
 }
 
-/* Dashboard layout grid */
+/* Dashboard layout - single column */
 .dashboard-layout {
-  display: grid;
-  grid-template-columns: auto 1fr;
-  gap: 30px;
   max-width: 1600px;
   margin: 0 auto;
+  padding: 0 24px;
 }
 
 /* Dashboard sidebar */
@@ -617,37 +640,37 @@ label{display:block;margin-bottom:6px;color:var(--muted);font-size:13px}
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 20px;
+  margin-bottom: 32px;
 }
 
 .dashboard-actions {
-  margin-bottom: 20px;
+  margin-bottom: 32px;
 }
 
-/* Welcome message updates for sidebar - smaller and more compact */
+/* Welcome message updates for sidebar - clean and modern */
 .welcome-message {
-  background: linear-gradient(135deg, var(--panel) 0%, var(--background-secondary) 100%);
-  padding: 16px 20px;
+  background: var(--panel);
+  padding: 20px 24px;
   border-radius: 12px;
   box-shadow: var(--card-shadow);
-  border: 1px solid var(--border-color);
+  border: 1px solid var(--border);
   width: fit-content;
-  min-width: 160px;
+  min-width: 200px;
   max-width: 100%;
 }
 
 .welcome-message h2 {
-  font-size: 18px;
-  font-weight: 700;
-  margin: 0 0 6px 0;
-  color: var(--accent);
-  line-height: 1.2;
+  font-size: 20px;
+  font-weight: 600;
+  margin: 0 0 8px 0;
+  color: var(--text);
+  line-height: 1.3;
 }
 
 .welcome-message p {
   margin: 0;
-  color: var(--text-secondary);
-  font-size: 13px;
+  color: var(--muted);
+  font-size: 14px;
   line-height: 1.3;
 }
 

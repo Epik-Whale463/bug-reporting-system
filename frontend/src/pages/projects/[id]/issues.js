@@ -333,25 +333,29 @@ export default function ProjectIssues() {
   const priorityColors = { low: '#6e7781', medium: '#0969da', high: '#bc4c00', critical: '#cf222e' }
 
   return (
-    <div className="container wide">
-      {/* Navigation Section */}
-      <div style={{ marginBottom: 32 }}>
-        <Link href="/dashboard" className="gh-btn">
-          ← Back to Projects
-        </Link>
-      </div>
+    <div className="dashboard-container">
+      <div className="container">
+        <div className="dashboard-layout">          
+          <main className="dashboard-main">
+            {/* Navigation Section */}
+            <div style={{ marginBottom: 32 }}>
+              <Link href="/dashboard" className="gh-btn">
+                ← Back to Projects
+              </Link>
+            </div>
 
-      {/* Project Header Section */}
-      <div className="issues-header">
-        <h1>{project?.name}</h1>
-        {project?.description && (
-          <p className="project-description">{project?.description}</p>
-        )}
-        <div className="section-label">Issues</div>
-      </div>
+            {/* Project Header Section */}
+            <div className="dashboard-header">
+              <div>
+                <h1 style={{fontSize:'36px', fontWeight:'800', margin:'0 0 8px 0', letterSpacing:'-0.005em'}}>{project?.name}</h1>
+                {project?.description && (
+                  <p style={{color:'var(--muted)', margin:'0 0 16px 0', fontSize:'16px'}}>{project?.description}</p>
+                )}
+              </div>
+            </div>
 
-      {/* Actions and Filters Section */}
-  <div style={{ marginBottom: 28 }}>
+            {/* Actions and Filters Section */}
+            <div className="dashboard-actions">
         {/* Create Issue Button and View Toggle */}
         <div style={{ marginBottom: 16, display: 'flex', gap: 12, alignItems: 'center', justifyContent: 'space-between' }}>
           <button onClick={() => setShowCreateForm(!showCreateForm)} className="btn btn-primary">
@@ -388,7 +392,7 @@ export default function ProjectIssues() {
         </div>
 
         {/* Filters Row */}
-  <div className="issues-filters-container" style={{ alignItems: 'center' }}>
+        <div className="issues-filters-container" style={{ display: 'flex', gap: 12, alignItems: 'center', flexWrap: 'wrap', marginBottom: 32 }}>
           <input
             type="text"
             placeholder="Search issues..."
@@ -508,13 +512,14 @@ export default function ProjectIssues() {
         </div>
       )}
 
-  <div style={{ marginTop: 8 }}>
-        <div className="issue-list-header">
-          <h2 style={{margin:0}}>Issues</h2>
-          <div className="muted" style={{ fontSize: 14 }}>
-            {loading ? 'Loading...' : `Page ${currentPage} of ${totalPages} • ${totalCount} total issues`}
-          </div>
-        </div>
+            {/* Issues Section */}
+            <div style={{ marginTop: 32 }}>
+              <div className="issue-list-header">
+                <h2 style={{margin:0, fontSize:'24px', fontWeight:'700'}}>Issues</h2>
+                <div className="muted" style={{ fontSize: 14 }}>
+                  {loading ? 'Loading...' : `Page ${currentPage} of ${totalPages} • ${totalCount} total issues`}
+                </div>
+              </div>
         
         {issues.length === 0 ? (
           <div className="card" style={{ textAlign: 'center', padding: 40 }}>
@@ -602,9 +607,12 @@ export default function ProjectIssues() {
               </div>
             )}
             
-            <Pagination />
-          </div>
-        )}
+              <Pagination />
+            </div>
+          )}
+            </div>
+          </main>
+        </div>
       </div>
     </div>
   )
